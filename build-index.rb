@@ -199,11 +199,30 @@ end
 
 items.sort_by!{|h| h[:sortkey] }
 
-structured = items
-	.chunk{|h| h[:heading].first(2) }
-	.map{|page, hs| [page, hs.chunk{|h| h[:heading] }] }
+# split into pages.
+# prefer one page == one letter, but only up to 1k entries per page.
+# then prefer chunking by 2 letters and finally by 3 (all).
+structured = items.chunk{|h| h[:heading].first(1) }.map{|page, hs|
+	if hs.length>1000
+		hs.chunk{|h| h[:heading].first(2) }.map{|page, hs|
+			if hs.length>1000
+				hs.chunk{|h| h[:heading] }.to_a
+			else
+				[[page, hs]]
+			end
+		}.inject(:+)
+	else
+		[[page, hs]]
+	end
+}.inject(:+)
 
-allowed_pages = %w[Ob Qu]
+index_page = s.page(prefix+'Indeks')
+index = structured.map(&:first).chunk{|a| a[0] }.map{|_, pagenames|
+	pagenames.map{|pgnm| "[[#{prefix+pgnm}|#{pgnm}]]" }.join(" &bull; ")
+}.join("<br>")
+index_page.text = index
+
+allowed_pages = %w[Ob Q]
 
 def render_line h, other_items, aliases_page_title, star=true
 	encoded_title = URI::encode_www_form_component h[:title]
@@ -240,7 +259,7 @@ pages = structured.map do |page_title, contents|
 	next unless allowed_pages.include? page_title
 	
 	lines = []
-	contents.each do |heading, hs|
+	contents.chunk{|h| h[:heading] }.each do |heading, hs|
 		lines << ""
 		lines << "=== #{heading} ==="
 		hs.each{|h|
@@ -248,7 +267,9 @@ pages = structured.map do |page_title, contents|
 		}
 	end
 	
-	if lines.empty?
+	puts page_title
+	
+	if contents.empty?
 		nil
 	else
 		page = s.page(prefix+page_title)
@@ -261,3 +282,4 @@ mode = :save # or :dump
 s.summary = 'aktualizacja list'
 pages.compact.each(&mode)
 aliases_page.send(mode)
+index_page.send(mode)
