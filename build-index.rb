@@ -257,5 +257,7 @@ pages = structured.map do |page_title, contents|
 	end
 end
 
-pages.compact.each(&:dump)
-aliases_page.dump
+mode = :save # or :dump
+s.summary = 'aktualizacja list'
+pages.compact.each(&mode)
+aliases_page.send(mode)
