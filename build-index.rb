@@ -202,6 +202,37 @@ structured = items
 
 allowed_pages = %w[Ob Qu]
 
+def render_line h, other_items, aliases_page_title, star=true
+	encoded_title = URI::encode_www_form_component h[:title]
+
+	if h[:alias]
+		[
+			(star ? '*' : nil),
+			"#{h[:defaultsort]}",
+			"→",
+			render_line(other_items.find{|h2| h2[:title] == h[:title] && !h2[:alias] }, other_items, aliases_page_title, false),
+			"&#x5B;[[#{aliases_page_title}|edytuj alias]]]",
+		].compact.join(' ')
+	else
+		[
+			(star ? '*' : nil),
+			(h[:defaultsort] ?
+				"[[#{h[:title]}|#{h[:defaultsort]}]]" :
+				"[[#{h[:title]}]]"),
+			(h[:lifetime] ?
+				"(#{h[:lifetime]})"  :
+				nil),
+			'–',
+			(h[:description] ?
+				"#{h[:description]}"  :
+				"''brak opisu w Wikidanych''"),
+			(h[:itemid] ?
+				"&#x5B;[[d:#{h[:itemid]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]" :
+				"&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]"),
+		].compact.join(' ')
+	end
+end
+
 pages = structured.map do |page_title, contents|
 	next unless allowed_pages.include? page_title
 	
@@ -210,34 +241,17 @@ pages = structured.map do |page_title, contents|
 		lines << ""
 		lines << "=== #{heading} ==="
 		hs.each{|h|
-			encoded_title = URI::encode_www_form_component h[:title]
-			
-			if h[:alias]
-				lines << "* #{h[:defaultsort]} → [[#{h[:title]}]] &#x5B;[[#{aliases_page.title}|edytuj]]]"
-			else
-				lines << [
-					'*',
-					(h[:defaultsort] ?
-						"[[#{h[:title]}|#{h[:defaultsort]}]]" :
-						"[[#{h[:title]}]]"),
-					(h[:lifetime] ?
-						"(#{h[:lifetime]})"  :
-						nil),
-					'–',
-					(h[:description] ?
-						"#{h[:description]}"  :
-						"''brak opisu w Wikidanych''"),
-					(h[:itemid] ?
-						"&#x5B;[[d:#{h[:itemid]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]" :
-						"&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]"),
-				].compact.join(' ')
-			end
+			lines << render_line(h, items, aliases_page.title)
 		}
 	end
 	
-	page = s.page(prefix+page_title)
-	page.text = lines.join("\n")
-	page
+	if lines.empty?
+		nil
+	else
+		page = s.page(prefix+page_title)
+		page.text = lines.join("\n")
+		page
+	end
 end
 
 pages.compact.each(&:dump)
