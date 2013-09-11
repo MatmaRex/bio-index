@@ -2,7 +2,7 @@
 require 'sunflower'
 require 'parallel'
 require 'roman'
-# require 'unicode_utils'
+require 'unicode_utils'
 require 'yaml'
 YAML::ENGINE.yamler = 'syck' # stupid unidecoder
 require 'unidecoder'
@@ -176,45 +176,69 @@ end
 
 items += aliases
 
-pliterki = Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii(ż: 'z~')+'~'] } ]
+def build_heading text
+	@pliterki_heading ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l] } ]
+	# to ascii except for letters with Polish diacritics; uppercase first letter only
+	text = UnicodeUtils.titlecase( text.to_ascii(@pliterki_heading) )
+	# strip non-letters like ' or ,
+	return text.sub(/[^a-zA-Z#{@pliterki_heading}]/, '').first(3)
+end
+def build_sortkey text
+	@pliterki_sortkey ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii(ż: 'z~')+'~'] } ]
+	# convert everything to ascii, sort letters with Polish diacritics after all other ones
+	return text.to_ascii(@pliterki_sortkey).downcase
+end
+
 items.each do |h|
-	h[:sortkey] = (h[:defaultsort] || h[:title]).to_ascii(pliterki).downcase
+	h[:heading] = build_heading(h[:defaultsort] || h[:title])
+	h[:sortkey] = build_sortkey(h[:defaultsort] || h[:title])
 end
 
 items.sort_by!{|h| h[:sortkey] }
 
-############
-ob = items.select{|h| %w[Ob Qu].include?((h[:defaultsort] || h[:title])[0, 2]) }
+structured = items
+	.chunk{|h| h[:heading].first(2) }
+	.map{|page, hs| [page, hs.chunk{|h| h[:heading] }] }
 
-lines = []
-ob.chunk{|h| (h[:defaultsort] || h[:title])[0, 3] }.each{|heading, hs|
-	lines << ""
-	lines << "=== #{heading[0].upcase + heading[1..-1]} ==="
-	hs.each{|h|
-		encoded_title = URI::encode_www_form_component h[:title]
-		
-		if h[:alias]
-			lines << "* #{h[:defaultsort]} → [[#{h[:title]}]] &#x5B;[[(aliasy)|edytuj]]]"
-		else
-			lines << [
-				'*',
-				(h[:defaultsort] ?
-					"[[#{h[:title]}|#{h[:defaultsort]}]]" :
-					"[[#{h[:title]}]]"),
-				(h[:lifetime] ?
-					"(#{h[:lifetime]})"  :
-					nil),
-				'–',
-				(h[:description] ?
-					"#{h[:description]}"  :
-					"''brak opisu w Wikidanych''"),
-				(h[:itemid] ?
-					"&#x5B;[[d:#{h[:itemid]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]" :
-					"&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]"),
-			].compact.join(' ')
-		end
-	}
-}
+allowed_pages = %w[Ob Qu]
 
-puts lines
+pages = structured.map do |page_title, contents|
+	next unless allowed_pages.include? page_title
+	
+	lines = []
+	contents.each do |heading, hs|
+		lines << ""
+		lines << "=== #{heading} ==="
+		hs.each{|h|
+			encoded_title = URI::encode_www_form_component h[:title]
+			
+			if h[:alias]
+				lines << "* #{h[:defaultsort]} → [[#{h[:title]}]] &#x5B;[[#{aliases_page.title}|edytuj]]]"
+			else
+				lines << [
+					'*',
+					(h[:defaultsort] ?
+						"[[#{h[:title]}|#{h[:defaultsort]}]]" :
+						"[[#{h[:title]}]]"),
+					(h[:lifetime] ?
+						"(#{h[:lifetime]})"  :
+						nil),
+					'–',
+					(h[:description] ?
+						"#{h[:description]}"  :
+						"''brak opisu w Wikidanych''"),
+					(h[:itemid] ?
+						"&#x5B;[[d:#{h[:itemid]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]" :
+						"&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]"),
+				].compact.join(' ')
+			end
+		}
+	end
+	
+	page = s.page(prefix+page_title)
+	page.text = lines.join("\n")
+	page
+end
+
+pages.compact.each(&:dump)
 aliases_page.dump
