@@ -184,7 +184,7 @@ def build_heading text
 	return (UnicodeUtils.titlecase text.sub(/ .+/, '').gsub(/[^a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, '')).first(3)
 end
 def build_sortkey text
-	@pliterki_sortkey ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii(ż: 'z~')+'~'] } ]
+	@pliterki_sortkey ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii('ż'=>'z~', 'Ż'=>'Z~')+'~'] } ]
 	# convert everything to ascii, sort letters with Polish diacritics after all other ones
 	text = text.to_ascii(@pliterki_sortkey).tr('@','a').tr("'`\"",'').downcase
 	# strip non-letters like ","
@@ -194,6 +194,7 @@ end
 items.each do |h|
 	h[:heading] = build_heading(h[:defaultsort] || h[:title])
 	h[:sortkey] = build_sortkey(h[:defaultsort] || h[:title])
+	h[:heading] = '0-9' if h[:heading].empty?
 end
 
 items.sort_by!{|h| h[:sortkey] }
