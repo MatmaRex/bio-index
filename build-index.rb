@@ -68,7 +68,7 @@ items = SavePoint.here! 'entity-list' do
 			ids: hs.map{|h| h[:itemid] }.compact.join('|')
 		)
 		
-		res['entities'].map do |itemid, r|
+		res['entities'].each do |itemid, r|
 			map[itemid.upcase][:description] = (r['descriptions']['pl']['value'] rescue nil)
 		end
 	end
@@ -91,7 +91,8 @@ items = SavePoint.here! 'lifetime' do
 			titles: hs.map{|h| h[:title] }.join('|'),
 		)
 		
-		res['query']['pages'].map do |pageid, r|
+		res['query']['pages'].each do |pageid, r|
+			next if !r['categories'] # probably redirect or page otherwise gone
 			cats = r['categories'].map{|c| c['title'].sub(/^Kategoria:/, '') }
 			
 			birthcat = cats.grep(/^Nieznana data urodzin$|^Urodzeni w /)[0]
