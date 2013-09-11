@@ -46,7 +46,7 @@ aliases = aliases.map{|e|
 		if other
 			if from == to
 				[other, to]
-			elsif other.split(', ').reverse.join(' ').downcase == to.downcase
+			elsif other.split(', ').reverse.join(' ').downcase.sub('- ', '-') == to.downcase
 				[from, to]
 			else
 				err << e
