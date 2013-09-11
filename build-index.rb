@@ -15,13 +15,17 @@ s = Sunflower.new('w:pl').login
 wd = Sunflower.new('www.wikidata.org').login
 
 list = SavePoint.here! 'category' do
-	s.make_list 'category_recursive', 'Kategoria:Biografie według daty urodzin'
+	[
+		s.make_list('category_recursive', 'Kategoria:Biografie według daty urodzin'),
+		s.make_list('category_recursive', 'Kategoria:Biografie według daty śmierci'),
+	].flatten
 end
 
 list = list.reject{|a| a.start_with? 'Kategoria:' }
+list.uniq!
 list.sort!
-# p list.length
 
+# p list.length
 
 # {
 # 	title: '',
