@@ -1,7 +1,6 @@
 # coding: utf-8
 require 'sunflower'
 require 'parallel'
-require 'roman'
 require 'unicode_utils'
 require 'yaml'
 YAML::ENGINE.yamler = 'syck' # stupid unidecoder
