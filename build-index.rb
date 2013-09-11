@@ -181,15 +181,15 @@ def build_heading text
 	@pliterki_heading ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l] } ]
 	# to ascii except for letters with Polish diacritics; uppercase first letter only
 	text = UnicodeUtils.titlecase( text.to_ascii(@pliterki_heading) )
-	# strip non-letters like ' or ,
-	return text.sub(/[^a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, '').first(3)
+	# strip non-letters like "'" or ",", ignore all after first space
+	return text.sub(/ .+/, '').gsub(/[^a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, '').first(3)
 end
 def build_sortkey text
 	@pliterki_sortkey ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii(ż: 'z~')+'~'] } ]
 	# convert everything to ascii, sort letters with Polish diacritics after all other ones
 	text = text.to_ascii(@pliterki_sortkey).downcase
-	# strip non-letters like ' or ,
-	return text.sub(/[^a-zA-Z]/, '')
+	# strip non-letters like "'" or ","
+	return text.gsub(/[^a-zA-Z~]/, '')
 end
 
 items.each do |h|
