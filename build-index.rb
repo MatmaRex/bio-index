@@ -143,15 +143,36 @@ items = SavePoint.here! 'lifetime' do
 	items
 end
 
+prefix = 'Wikipedysta:Matma Rex/Noty_biograficzne/'
+
 # add aliases
-aliases = File.readlines('aliases.txt', encoding: 'utf-8').map{|ln|
-	_, from, to = *ln.match(/^[:#*]\s*\[*([^|\]]+)(?:\|[^\]]*)?\]*\s*(?:-*[→>›])\s*\[*([^|\]]+)(?:\|[^\]]*)?\]*$/)
-	{
-		alias: true,
-		defaultsort: from.strip,
-		title: to.strip,
-	}
+aliases_page = s.page(prefix+'Aliasy')
+if aliases_page.text.empty?
+	aliases_page.text = File.read('aliases.txt', encoding: 'utf-8')
+end
+
+# parse the page and mark errors
+aliases = []
+invalid_aliases = []
+aliases_page.text.split(/\n/).each{|ln|
+	next unless ln =~ /^[:#*]/
+	_, from, to = *ln.match(/^[:#*]\s*(.+?)\s*(?:-*[→>›])\s*\[\[([^|\]]+)\]\]*$/)
+	if _ and from and to
+		aliases << {
+			alias: true,
+			defaultsort: from.strip,
+			title: to.strip,
+		}
+	else
+		invalid_aliases << ln
+	end
 }
+unless invalid_aliases.empty?
+	invalid_aliases.each do |ln|
+		aliases_page.text.sub!(/\s*#{Regexp.escape ln}\s*/, "\n")
+	end
+	aliases_page.text += "\n\n== Nierozpoznane wpisy ==\n#{invalid_aliases.join "\n"}"
+end
 
 items += aliases
 
@@ -196,3 +217,4 @@ ob.chunk{|h| (h[:defaultsort] || h[:title])[0, 3] }.each{|heading, hs|
 }
 
 puts lines
+aliases_page.dump
