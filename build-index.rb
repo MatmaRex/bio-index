@@ -92,12 +92,7 @@ items = SavePoint.here! 'lifetime' do
 		)
 		
 		res['query']['pages'].map do |pageid, r|
-			begin #####
 			cats = r['categories'].map{|c| c['title'].sub(/^Kategoria:/, '') }
-			rescue #####
-				pp r #####
-				next #####
-			end #####
 			
 			birthcat = cats.grep(/^Nieznana data urodzin$|^Urodzeni w /)[0]
 			deathcat = cats.grep(/^Nieznana data śmierci$|^Zmarli w /)[0]
@@ -142,11 +137,7 @@ items = SavePoint.here! 'lifetime' do
 				end
 			;
 			
-			if map[pageid.to_i] #####
 			map[pageid.to_i][:lifetime] = lifetime
-			else  #####
-				puts r['title'] #####
-			end #####
 		end
 	end
 	items

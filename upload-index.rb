@@ -18,7 +18,7 @@ to_upload = to_upload.select{|t,_,d| titles.include? t }
 
 p to_upload.length
 
-to_upload.drop(5).drop(50).each do |title, _, desc|
+to_upload.each do |title, _, desc|
 	wdtoken = wd.API('action=tokens&type=edit')['tokens']['edittoken']
 	p wd.API(
 		action: 'wbsetdescription',
@@ -31,6 +31,4 @@ to_upload.drop(5).drop(50).each do |title, _, desc|
 		language: 'pl',
 		value: desc,
 	)
-	
 end
-
