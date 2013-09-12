@@ -131,12 +131,20 @@ fmt = lambda{|yr|
 }
 lines = out.select{|a| a[0] == 'conflict' }.map{|type, title, bd, a, b|
 	bd = bd[0] == ?b ? 'ur.' : 'zm.'
-	"\# [[#{title}]]: #{bd} #{fmt.call a} vs #{fmt.call b}"
+	"|-\n| [[#{title}]] || #{bd} || #{fmt.call a} || #{fmt.call b}"
 }
 
 puts 'Konflikty pomiędzy kategoryzacją (daty z lewej) a notami biograficznymi (z prawej).'
 puts ''
 puts '<div class=hlist>__TOC__</div>'
+puts ''
 puts lines.each_slice(30).map.with_index{|lns, i|
-	["", "== #{i+1} =="] + lns
+	<<-EOF.gsub(/\t/, '')
+	== #{i+1} ==
+	{| class=wikitable
+	! Osoba !!  !! wg kat. !! wg not
+	#{lns.join "\n"}
+	|}
+	
+	EOF
 }
