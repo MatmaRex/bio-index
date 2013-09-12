@@ -219,7 +219,7 @@ structured = items.chunk{|h| h[:heading].first(1) }.map{|page, hs|
 
 index_page = s.page(prefix+'Indeks')
 index = structured.map(&:first).chunk{|a| a[0] }.map{|_, pagenames|
-	pagenames.map{|pgnm| "[[#{prefix+pgnm}|#{pgnm}]]" }.join(" &bull; ")
+	pagenames.map{|pgnm| "[[#{prefix+pgnm}|#{pgnm}]]" }.join(" • ")
 }.join("<br>")
 index_page.text = index
 
