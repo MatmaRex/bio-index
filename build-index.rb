@@ -6,6 +6,7 @@ require 'yaml'
 YAML::ENGINE.yamler = 'syck' # stupid unidecoder
 require 'unidecoder'
 require 'uri'
+require 'nokogiri' # no kill like overkill
 require 'pp'
 
 require './savepoint.rb'
@@ -224,20 +225,29 @@ index_page.text = index
 
 allowed_pages = %w[Ob Q]
 
-def render_line h, other_items, aliases_page_title, star=true
+def render_line h, other_items, aliases_page_title, full_line=true
 	encoded_title = URI::encode_www_form_component h[:title]
 
+	# transcribe the data into HTML for easy access
+	div = Nokogiri.HTML('<div/>').at('div')
+	div['class'] = 'bioindex-entry'
+	div['data-title'] = h[:title].to_s
+	div['data-defaultsort'] = h[:defaultsort].to_s
+	div['data-lifetime'] = h[:lifetime].to_s
+	div['data-description'] = h[:description].to_s
+	div['data-itemid'] = h[:itemid].to_s
+	div.content = '~~~~' # guaranteed not to appear in wikitext
+	wrap_start, wrap_end = *div.to_s.split('~~~~')
+	
 	if h[:alias]
-		[
-			(star ? '*' : nil),
+		display = [
 			"#{h[:defaultsort]}",
 			"→",
 			render_line(other_items.find{|h2| h2[:title] == h[:title] && !h2[:alias] }, other_items, aliases_page_title, false),
-			"&#x5B;[[#{aliases_page_title}|edytuj alias]]]",
+			"<span class=mw-editsection>&#x5B;[[#{aliases_page_title}|edytuj alias]]]</span>",
 		].compact.join(' ')
 	else
-		[
-			(star ? '*' : nil),
+		display = [
 			(h[:defaultsort] ?
 				"[[#{h[:title]}|#{h[:defaultsort]}]]" :
 				"[[#{h[:title]}]]"),
@@ -249,10 +259,12 @@ def render_line h, other_items, aliases_page_title, star=true
 				"#{h[:description]}"  :
 				"''brak opisu w Wikidanych''"),
 			(h[:itemid] ?
-				"&#x5B;[[d:#{h[:itemid]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]" :
-				"&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]"),
+				"<span class=mw-editsection>&#x5B;[[d:#{h[:itemid]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]</span>" :
+				"<span class=mw-editsection>&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]</span>"),
 		].compact.join(' ')
 	end
+	
+	full_line ? "* #{wrap_start}#{display}#{wrap_end}" : display
 end
 
 pages = structured.map do |page_title, contents|
