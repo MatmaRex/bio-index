@@ -29,7 +29,7 @@ list.sort!
 # {
 # 	title: '',
 # 	defaultsort: '',
-# 	pageid: 'Q',
+# 	pageid: '',
 # 	itemid: 'Q',
 # }
 items = SavePoint.here! 'props-list' do
