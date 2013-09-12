@@ -71,6 +71,7 @@ items = SavePoint.here! 'entity-list' do
 		res['entities'].each do |itemid, r|
 			map[itemid.upcase][:description] = (r['descriptions']['pl']['value'] rescue nil)
 		end
+		nil # workaround for https://github.com/grosser/parallel/issues/74
 	end
 	items
 end
@@ -140,6 +141,7 @@ items = SavePoint.here! 'lifetime' do
 			
 			map[pageid.to_i][:lifetime] = lifetime
 		end
+		nil # workaround for https://github.com/grosser/parallel/issues/74
 	end
 	items
 end
