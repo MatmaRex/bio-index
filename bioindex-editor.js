@@ -19,18 +19,14 @@
 	mw.loader.load('mediawiki.api');
 	mw.loader.load('jquery.wikibase.linkitem');
 	
-	function notify(text) {
-		mw.notify(text, {autoHide: false, tag: 'bioindex'});
+	function notify(text, tag) {
+		mw.notify(text, {autoHide: !!tag, tag: 'bioindex'+tag});
 	}
 	
 	function errorHandler() {
 		notify('Coś poszło nie tak. Odśwież stronę!');
 		console.log(this);
 		console.log(arguments);
-	}
-	
-	function difflink(revid) {
-		return "//www.wikidata.org/?oldid="+revid+"&diff=prev";
 	}
 	
 	var wdLoginCheck = function(api) {
@@ -56,6 +52,7 @@
 			
 			var wdApi = new wikibase.RepoApi();
 			wdLoginCheck(wdApi);
+			var wpApi = new mw.Api();
 			
 			var $entry = $(that).closest('.bioindex-entry');
 			
@@ -126,33 +123,77 @@
 			function handleDefaultsort(){
 				var promise = $.Deferred();
 				
-				var newtext = $.trim( $defaultsortEntry.val() );
-				if(newtext == defaultsort) {
+				var newText = $.trim( $defaultsortEntry.val() );
+				if(newText == defaultsort) {
 					promise.resolve(null);
 					return promise;
 				}
+				defaultsort = newText;
 				
-				notify('Edycja defaultsort jeszcze nie jest zaimplementowana :(');
-				promise.reject(); // TODO
+				var pagename = mw.config.get('wgPageName');
+				wpApi.get({
+					action: 'tokens',
+					type: 'edit'
+				}).fail(errorHandler).done(function(resp){
+					var wptoken = resp.tokens.edittoken;
+					
+					wpApi.get({
+						action: 'query',
+						prop: 'revisions',
+						rvprop: 'content',
+						rvlimit: '1',
+						titles: title,
+						indexpageids: true
+					}).fail(errorHandler).done(function(resp){
+						var pagetext = resp.query.pages[ resp.query.pageids[0] ].revisions[0]['*'];
+						var newdefsort = '{{DEFAULTSORT:'+defaultsort+'}}';
+						
+						if(pagetext.indexOf('{{DEFAULTSORT:')) {
+							pagetext = pagetext.replace(/{{DEFAULTSORT:.+?}}/, newdefsort);
+						} else {
+							pagetext = pagetext.replace(/\[\[\s*(kategoria|category)\s*:/i, newdefsort+"\n"+'$&');
+						}
+						
+						wpApi.post({
+							action: 'edit',
+							token: wptoken,
+							title: title,
+							text: pagetext,
+							summary: "poprawa DEFAULTSORT via [[:pl:"+pagename+"|noty biograficzne]]",
+						}).fail(errorHandler).done(function(resp){
+							if(resp.edit && resp.edit.result == 'Success') {
+								var diff = "/?oldid="+resp.edit.newrevid+"&diff=prev";
+								notify( $('<span>').append(
+									'Zapisano zmiany w artykule ' + mw.html.escape(title) + '. ',
+									$('<a>').text('Diff').attr('href', diff),
+									'.'
+								), 'defaultsort' );
+								promise.resolve(resp);
+							} else {
+								promise.reject(resp);
+							}
+						});
+					});
+				});
+				
 				return promise;
 			}
 			function handleDescription(){
 				var promise = $.Deferred();
 				
-				var newtext = $.trim( $descriptionEntry.val() );
-				if(newtext == description) {
+				var newText = $.trim( $descriptionEntry.val() );
+				if(newText == description) {
 					promise.resolve(null);
 					return promise;
 				}
-				description = newtext;
+				description = newText;
 				
-				wdApi.post({
+				var pagename = mw.config.get('wgPageName');
+				wdApi.get({
 					action: 'tokens',
 					type: 'edit'
 				}).fail(errorHandler).done(function(resp){
 					var wdtoken = resp.tokens.edittoken;
-					var pagename = mw.config.get('wgPageName');
-					console.log(wdtoken);
 					
 					wdApi.post({
 						action: 'wbsetdescription',
@@ -164,12 +205,12 @@
 						value: description
 					}).fail(errorHandler).done(function(resp){
 						if(resp.success) {
-							var diff = difflink(resp.entity.lastrevid);
+							var diff = "//www.wikidata.org/?oldid="+resp.entity.lastrevid+"&diff=prev";
 							notify( $('<span>').append(
 								'Zapisano zmiany we wpisie ' + mw.html.escape(title) + '. ',
 								$('<a>').text('Diff').attr('href', diff),
 								'.'
-							) );
+							), 'description' );
 							promise.resolve(resp);
 						} else {
 							promise.reject(resp);
