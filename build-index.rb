@@ -125,16 +125,16 @@ items = SavePoint.here! 'lifetime' do
 					if birthinfo[1] == deathinfo[1]
 						"#{birthinfo[1]}"
 					else
-						"#{birthinfo[1]} - #{deathinfo[1]}"
+						"#{birthinfo[1]} – #{deathinfo[1]}"
 					end
 				when [:century, :year]
 					"#{birthinfo[1]} - #{deathinfo[1]}"
 				when [:year, :none]
 					"ur. #{birthinfo[1]}"
 				when [:year, :century]
-					"#{birthinfo[1]} - #{deathinfo[1]}"
+					"#{birthinfo[1]} – #{deathinfo[1]}"
 				when [:year, :year]
-					"#{birthinfo[1]}-#{deathinfo[1]}"
+					"#{birthinfo[1]}–#{deathinfo[1]}"
 				end
 			;
 			
