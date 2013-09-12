@@ -1,0 +1,21 @@
+.bioindex-help {
+	position: absolute;
+	margin-top: 2em;
+	background: white;
+	border: 1px solid gray;
+	border-radius: .5em;
+	padding: 1em;
+}
+
+.bioindex-entry-active input {
+	border: 0;
+	border-bottom: 1px solid gray;
+	transition: width 100ms;
+}
+
+.bioindex-dummy {
+	position: absolute;
+	visibility: hidden;
+	left: -9999px;
+	white-space: pre;
+}
