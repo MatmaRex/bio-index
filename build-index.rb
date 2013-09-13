@@ -287,7 +287,7 @@ def render_line h, other_items, aliases_page_title, full_line=true
 				"#{h[:description]}"  :
 				"''brak opisu w Wikidanych''"),
 			(h[:itemid] ?
-				"<span class=mw-editsection>&#x5B;[[d:#{h[:itemid]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]</span>" :
+				"<span class=mw-editsection>&#x5B;[[d:Special:ItemByTitle/plwiki/#{h[:title]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]</span>" :
 				"<span class=mw-editsection>&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]</span>"),
 		].compact.join(' ')
 	end
