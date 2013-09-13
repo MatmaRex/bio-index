@@ -10,6 +10,7 @@ require 'nokogiri' # no kill like overkill
 require 'pp'
 
 require './savepoint.rb'
+require './intro-extractor.rb'
 
 s = Sunflower.new('w:pl').login
 wd = Sunflower.new('www.wikidata.org').login
@@ -146,6 +147,30 @@ items = SavePoint.here! 'lifetime' do
 	items
 end
 
+# add :descriptionSuggestion
+# TODO: make this scan the dumps instead of using the API
+# downloading the contents of 200k pages is just not sane
+items = SavePoint.here! 'descriptionSuggestion' do
+	Parallel.each_with_index( items.each_slice(500), in_threads: 5 ) do |hs, i|
+		p i
+		
+		map = Hash[ hs.map{|h| [ h[:title], h ] } ]
+		
+		# TODO parse all
+		okay = %w[Ob Q]
+		hs = hs.select{|h| okay.any?{|lt| (h[:defaultsort]||h[:title]).start_with? lt } }
+		next if hs.length==0
+		
+		list = s.make_list 'pages', hs.map{|h| h[:title] }
+		list.pages.each do |p|
+			lifetime, intro = *parse_intro(p.text)
+			map[p.title][:descriptionSuggestion] = intro
+		end
+		nil # workaround for https://github.com/grosser/parallel/issues/74
+	end
+	items
+end
+
 prefix = 'Wikipedysta:Matma Rex/Noty_biograficzne/'
 
 # add aliases
@@ -237,6 +262,7 @@ def render_line h, other_items, aliases_page_title, full_line=true
 	div['data-defaultsort'] = h[:defaultsort].to_s
 	div['data-lifetime'] = h[:lifetime].to_s
 	div['data-description'] = h[:description].to_s
+	div['data-descriptionSuggestion'] = h[:descriptionSuggestion].to_s
 	div['data-itemid'] = h[:itemid].to_s
 	div.content = '~~~~' # guaranteed not to appear in wikitext
 	wrap_start, wrap_end = *div.to_s.split('~~~~')
