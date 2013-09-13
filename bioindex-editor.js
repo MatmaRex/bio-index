@@ -80,7 +80,7 @@
 			var itemid = $entry.data('itemid');
 			
 			// rebuild the entry with edit fields
-			var $defaultsortEntry = $('<input>').val(defaultsort);
+			var $defaultsortEntry = $('<input>').val(defaultsort||title);
 			var $articleLink = $('<a>').text('↗')
 				.attr('href', mw.util.wikiGetlink(title))
 				.attr('title', 'Przejdź do artykułu: '+title);
@@ -112,7 +112,7 @@
 			
 			function rebuild() {
 				$entry.empty().append(
-					$articleLink.attr('title', title).text(defaultsort),
+					$articleLink.attr('title', title).text(defaultsort||title),
 					mw.html.escape(lifetime ? ' ('+lifetime+')' : ''),
 					' – ',
 					description ? mw.html.escape(description) : $('<em>').text('brak opisu w Wikidanych'),
