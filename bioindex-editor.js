@@ -41,6 +41,8 @@
 		});
 	};
 	
+	var goToNextActive = false;
+	
 	$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection a', function(e) {
 		var that = this;
 		mw.loader.using(['jquery.spinner', 'mediawiki.api', 'jquery.wikibase.linkitem'], function() {
@@ -80,24 +82,28 @@
 			var itemid = $entry.data('itemid');
 			
 			// rebuild the entry with edit fields
-			var $defaultsortEntry = $('<input>').val(defaultsort||title);
+			var $defaultsortEntry = $('<input type=text>').val(defaultsort||title);
 			var $articleLink = $('<a>').text('↗')
 				.attr('href', mw.util.wikiGetlink(title))
 				.attr('title', 'Przejdź do artykułu: '+title);
-			var $descriptionEntry = $('<input>').val(description||descriptionSuggestion);
+			var $descriptionEntry = $('<input type=text>').val(description||descriptionSuggestion);
 			var $saveButton = $('<button type=submit>').text('zapisz');
 			var $cancelButton = $('<button type=reset>').text('anuluj');
+			var $goToNextCheckbox = $('<input type=checkbox>').prop('checked', goToNextActive);
+			var $goToNextCheckboxLabel = $('<label>').text(' po zapisaniu przejdź do nast. bez opisu').prepend($goToNextCheckbox);
+			
 			var $dummyForMeasurements = $('<span>').addClass('bioindex-dummy');
 			
 			var $form = $('<form>').append(
-				$instructions,
 				$defaultsortEntry,
 				$articleLink,
 				mw.html.escape(lifetime ? ' ('+lifetime+')' : ''),
 				' – ',
 				$descriptionEntry, ' ',
 				$saveButton, ' ',
-				$cancelButton,
+				$cancelButton, ' ',
+				$goToNextCheckboxLabel,
+				$instructions,
 				$dummyForMeasurements
 			);
 			$entry.empty().addClass('bioindex-entry-active').append( $form );
@@ -236,6 +242,18 @@
 				e.preventDefault();
 				var $spinner = $.createSpinner();
 				$form.append(' ', $spinner);
+				
+				goToNextActive = $goToNextCheckbox.prop('checked');
+				if(goToNextActive) {
+					// this kinda sucks
+					var $all = $('#mw-content-text').find('.bioindex-entry[data-description=""]').add($entry);
+					if($all.length > 1) {
+						var idx = $all.index($entry);
+						var $next = $all.eq( idx === $all.length-1 ? 0 : idx+1 );
+						$next.find('.mw-editsection a').trigger('click');
+					}
+				}
+				
 				$.when(
 					handleDefaultsort().fail(errorHandler),
 					handleDescription().fail(errorHandler)

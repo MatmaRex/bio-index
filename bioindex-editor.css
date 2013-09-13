@@ -1,13 +1,12 @@
 .bioindex-help {
 	position: absolute;
-	margin-top: 2em;
 	background: white;
 	border: 1px solid gray;
 	border-radius: .5em;
 	padding: 1em;
 }
 
-.bioindex-entry-active input {
+.bioindex-entry-active input[type=text] {
 	border: 0;
 	border-bottom: 1px solid gray;
 	transition: width 100ms;
@@ -18,4 +17,18 @@
 	visibility: hidden;
 	left: -9999px;
 	white-space: pre;
+}
+
+/* Only show help when current area is focused */
+* ~ .bioindex-help {
+	visibility: hidden;
+	opacity: 0;
+	margin-top: -2em;
+	transition: margin-top, opacity;
+	transition-duration: 250ms;
+}
+input:focus ~ .bioindex-help {
+	visibility: visible;
+	opacity: 1;
+	margin-top: 0;
 }
