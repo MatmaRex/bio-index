@@ -62,6 +62,13 @@
 					$('<li>').text('Zmiana wyświetlanego imienia i nazwiska spowoduje zmianę {{DEFAULTSORT: w artykule.'),
 					$('<li>').text('Zmiana opisu spowoduje zmianę opisu artykułu na Wikidanych.'),
 					$('<li>').text('Lata życia nie są na razie edytowalne z poziomu tego narzędzia. Aby je poprawić, zmodyfikuj kategorie urodzenia i śmierci w artykule.')
+				),
+				$('<h3>').text('Porady dotyczące opisów na Wikidanych:'),
+				$('<ul>').append(
+					$('<li>').text('Długość nie powinna przekraczać 10-15 słów; często wystarczą 2-3.'),
+					$('<li>').text('Opis nie jest zdaniem: powinien zaczynać się małą literą, nie powinien kończyć się kropką.'),
+					$('<li>').text('Poprawny szyk to zwykle „polski wikipedysta”, nie „wikipedysta polski”.'),
+					$('<li>').text('Nie wspominaj o „obecnych” rzeczach – funkcjach polityków, klubach piłkarzy itd.')
 				)
 			);
 			
