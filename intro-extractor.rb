@@ -56,7 +56,7 @@ def parse_intro text
 	lifetime = extract_lifetime zaj
 	
 	true while zaj.gsub!(/\s*\([^()]+\)/, '') # parentheses (lifetime etc.), including nested
-	zaj.gsub!(/\s*\\{\{.+?\}\}/, '') # templates
+	zaj.gsub!(/\s*\{\{.+?\}\}/, '') # templates
 	zaj.sub!(/\A.*'''(.+?)'''/, '') # bolded article name and everything prior
 	zaj.sub!(/(\S{3,}\.)\s+.+/, '\1') # everything after the first sentence; try to grasp abbreviations
 	zaj.sub!(/\.\s*\Z/, '') # (final full stop)
