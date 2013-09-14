@@ -129,7 +129,7 @@ items = SavePoint.here! 'lifetime' do
 						"#{birthinfo[1]} – #{deathinfo[1]}"
 					end
 				when [:century, :year]
-					"#{birthinfo[1]} - #{deathinfo[1]}"
+					"#{birthinfo[1]} – #{deathinfo[1]}"
 				when [:year, :none]
 					"ur. #{birthinfo[1]}"
 				when [:year, :century]
