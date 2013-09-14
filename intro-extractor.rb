@@ -67,8 +67,10 @@ def parse_intro text
 end
 
 if __FILE__ == $0
+	require 'sunflower'
+	s = Sunflower.new.login
 	# read from stdin
-	list = s.make_list 'pages', readlines.map{|ln| ln.strip.force_encoding('utf-8')}
+	list = s.make_list 'pages', readlines.map{|ln| ln.strip.encode('utf-8')}
 	intros = list.pages.each do |p|
 		lifetime, intro = parse_intro(p.text)
 		puts "#{p.title} - #{intro}"
