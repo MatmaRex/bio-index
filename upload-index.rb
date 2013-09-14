@@ -39,7 +39,9 @@ to_upload.each do |title, _, desc|
 		
 		if ent['missing']
 			puts "Would create new item for #{title}"
-		elsif ent['descriptions'] and ent['descriptions']['pl']['value'] != desc
+		elsif ent['descriptions'] and ent['descriptions']['pl']['value'] == desc
+			puts "Would ignore (description already present) #{title}"
+		elsif ent['descriptions']
 			puts "Would overwrite description for #{title}"
 		else
 			# not a particularly interesting case.
