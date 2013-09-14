@@ -75,13 +75,13 @@
 				)
 			);
 			
-			var title = $entry.data('title');
-			var defaultsort = $entry.data('defaultsort');
-			var lifetime = $entry.data('lifetime');
-			var description = $entry.data('description');
-			var descriptionSuggestion = $entry.data('descriptionSuggestion');
-			var itemid = $entry.data('itemid');
-			var aliased = $entry.data('aliased');
+			var title = $entry.data('title') || '';
+			var defaultsort = $entry.data('defaultsort') || '';
+			var lifetime = $entry.data('lifetime') || '';
+			var description = $entry.data('description') || '';
+			var descriptionSuggestion = $entry.data('descriptionSuggestion') || '';
+			var itemid = $entry.data('itemid') || '';
+			var aliased = $entry.data('aliased') || '';
 			
 			var $editsectionLinks = $entry.find('.mw-editsection').detach();
 			
