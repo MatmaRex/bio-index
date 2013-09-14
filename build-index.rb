@@ -269,13 +269,13 @@ def render_line h, other_items, aliases_page_title
 	# transcribe the data into HTML for easy access
 	div = Nokogiri.HTML('<div/>').at('div')
 	div['class'] = 'bioindex-entry'
-	div['data-title'] = h[:title].to_s
-	div['data-defaultsort'] = h[:defaultsort].to_s
-	div['data-lifetime'] = h[:lifetime].to_s
-	div['data-description'] = h[:description].to_s
-	div['data-description-suggestion'] = h[:descriptionSuggestion].to_s
-	div['data-itemid'] = h[:itemid].to_s
-	div['data-aliased'] = h[:aliased].to_s
+	div['data-title'] = h[:title].to_s if h[:title]
+	div['data-defaultsort'] = h[:defaultsort].to_s if h[:defaultsort]
+	div['data-lifetime'] = h[:lifetime].to_s if h[:lifetime]
+	div['data-description'] = h[:description].to_s if h[:description]
+	div['data-description-suggestion'] = h[:descriptionSuggestion].to_s if h[:descriptionSuggestion]
+	div['data-itemid'] = h[:itemid].to_s if h[:itemid]
+	div['data-aliased'] = h[:aliased].to_s if h[:aliased]
 	div.content = '~~~~' # guaranteed not to appear in wikitext
 	wrap_start, wrap_end = *div.to_s.split('~~~~')
 	
