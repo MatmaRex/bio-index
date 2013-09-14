@@ -21,6 +21,7 @@ $stderr.puts to_upload.length
 puts 'no mode given' if !ARGV[0]
 dry_run = ARGV[0] != '--upload'
 
+wdtoken = wd.API('action=tokens&type=edit')['tokens']['edittoken'] unless dry_run
 
 Parallel.each_with_index(to_upload, in_threads: 10) do |(title, _, desc), i|
 	if i % 100 == 0
@@ -47,7 +48,6 @@ Parallel.each_with_index(to_upload, in_threads: 10) do |(title, _, desc), i|
 			# not a particularly interesting case.
 		end
 	else
-		wdtoken = wd.API('action=tokens&type=edit')['tokens']['edittoken']
 		res = wd.API(
 			action: 'wbsetdescription',
 			token: wdtoken,
