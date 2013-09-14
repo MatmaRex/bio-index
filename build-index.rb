@@ -146,25 +146,31 @@ items = SavePoint.here! 'lifetime' do
 end
 
 # add :descriptionSuggestion
-# TODO: make this scan the dumps instead of using the API
-# downloading the contents of 200k pages is just not sane
 items = SavePoint.here! 'descriptionSuggestion' do
-	Parallel.each_with_index( items.each_slice(500), in_threads: 5 ) do |hs, i|
-		p i
+	map = Hash[ items.map{|h| [ h[:title], h ] } ]
+	
+	dump_filename = '../../../Downloads/plwiki-20130831-pages-articles.xml.bz2'
+	# two reasons for not using bzip2-ruby gem: it's a pita to build on windows
+	# and this magically provides parallelization of unzipping and processing
+	io = IO.popen "bzip2 -dc #{dump_filename}", 'rb'
+	io.gets '</siteinfo>'
+
+	i = 0
+	while true
+		i += 1
+		p i if i % 1000 == 0
 		
-		map = Hash[ hs.map{|h| [ h[:title], h ] } ]
+		pg = io.gets('</page>')
+		break if io.eof? # last read is useless
 		
-		# TODO parse all
-		okay = %w[Ob Q]
-		hs = hs.select{|h| okay.any?{|lt| (h[:defaultsort]||h[:title]).start_with? lt } }
-		next if hs.length==0
+		noko = Nokogiri.XML pg
+		title = noko.at('title').text
+		next if !map[title]
 		
-		list = s.make_list 'pages', hs.map{|h| h[:title] }
-		list.pages.each do |p|
-			lifetime, intro = *parse_intro(p.text)
-			map[p.title][:descriptionSuggestion] = intro
-		end
+		lifetime, intro = *parse_intro(noko.at('text').text)
+		map[title][:descriptionSuggestion] = intro
 	end
+	
 	items
 end
 
