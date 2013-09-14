@@ -16,17 +16,17 @@ end
 titles = info.select{|h| %w[Ob Qu].include?((h[:defaultsort] || h[:title])[0, 2]) }.map{|h| h[:title] }
 to_upload = to_upload.reject{|t,_,d| titles.include? t }
 
-p to_upload.length
+$stderr.puts to_upload.length
 
 puts 'no mode given' if !ARGV[0]
 dry_run = ARGV[0] != '--upload'
 
-trap("INT"){
-	$stdout.flush
-	$stderr.puts 'flushed stdout'
-}
 
-to_upload.each do |title, _, desc|
+Parallel.each_with_index(to_upload, in_threads: 10) do |(title, _, desc), i|
+	if i % 100 == 0
+		$stderr.puts i 
+		Thread.exclusive{ $stdout.flush }
+	end
 	if dry_run
 		res = wd.API(
 			action: 'wbgetentities',
@@ -38,11 +38,11 @@ to_upload.each do |title, _, desc|
 		ent = res['entities'].values[0]
 		
 		if ent['missing']
-			puts "Would create new item for #{title}"
+			Thread.exclusive{ puts "Would create new item for #{title}" }
 		elsif ent['descriptions'] and ent['descriptions']['pl']['value'] == desc
-			puts "Would ignore (description already present) #{title}"
+			Thread.exclusive{ puts "Would ignore (description already present) #{title}" }
 		elsif ent['descriptions']
-			puts "Would overwrite description for #{title}"
+			Thread.exclusive{ puts "Would overwrite description for #{title}" }
 		else
 			# not a particularly interesting case.
 		end
@@ -91,7 +91,7 @@ to_upload.each do |title, _, desc|
 		end
 		
 		if !res['success']
-			puts "Error: #{title}"
+			Thread.exclusive{ puts "Error: #{title}" }
 		end
 	end
 end
