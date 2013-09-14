@@ -255,8 +255,16 @@ index_page.text = index
 
 allowed_pages = %w[Ob Q]
 
-def render_line h, other_items, aliases_page_title, full_line=true
+def render_line h, other_items, aliases_page_title
 	encoded_title = URI::encode_www_form_component h[:title]
+	
+	if h[:alias]
+		# use the item this one points to with additional alias information added
+		old_h = h
+		h = other_items.find{|h2| h2[:title] == old_h[:title] && !h2[:alias] }
+		h = h.dup
+		h[:aliased] = old_h[:defaultsort]
+	end
 
 	# transcribe the data into HTML for easy access
 	div = Nokogiri.HTML('<div/>').at('div')
@@ -267,35 +275,34 @@ def render_line h, other_items, aliases_page_title, full_line=true
 	div['data-description'] = h[:description].to_s
 	div['data-description-suggestion'] = h[:descriptionSuggestion].to_s
 	div['data-itemid'] = h[:itemid].to_s
+	div['data-aliased'] = h[:aliased].to_s
 	div.content = '~~~~' # guaranteed not to appear in wikitext
 	wrap_start, wrap_end = *div.to_s.split('~~~~')
 	
-	if h[:alias]
-		display = [
-			"#{h[:defaultsort]}",
-			"→",
-			render_line(other_items.find{|h2| h2[:title] == h[:title] && !h2[:alias] }, other_items, aliases_page_title, false),
-			"<span class=mw-editsection>&#x5B;[[#{aliases_page_title}|edytuj alias]]]</span>",
-		].compact.join(' ')
-	else
-		display = [
-			(h[:defaultsort] ?
-				"[[#{h[:title]}|#{h[:defaultsort]}]]" :
-				"[[#{h[:title]}]]"),
-			(h[:lifetime] ?
-				"(#{h[:lifetime]})"  :
-				nil),
-			'–',
-			(h[:description] ?
-				"#{h[:description]}"  :
-				"''brak opisu w Wikidanych''"),
-			(h[:itemid] ?
-				"<span class=mw-editsection>&#x5B;[[d:Special:ItemByTitle/plwiki/#{h[:title]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]</span>" :
-				"<span class=mw-editsection>&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]</span>"),
-		].compact.join(' ')
-	end
+	display = [
+		(h[:aliased] ?
+			[
+				h[:aliased],
+				"<span class=mw-editsection>&#x5B;[[#{aliases_page_title}|edytuj alias]]]</span>",
+				'→'
+			] :
+			nil),
+		(h[:defaultsort] ?
+			"[[#{h[:title]}|#{h[:defaultsort]}]]" :
+			"[[#{h[:title]}]]"),
+		(h[:lifetime] ?
+			"(#{h[:lifetime]})"  :
+			nil),
+		'–',
+		(h[:description] ?
+			"#{h[:description]}"  :
+			"''brak opisu w Wikidanych''"),
+		(h[:itemid] ?
+			"<span class=mw-editsection>&#x5B;[[d:Special:ItemByTitle/plwiki/#{h[:title]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]</span>" :
+			"<span class=mw-editsection>&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]</span>"),
+	].flatten.compact.join(' ')
 	
-	full_line ? "* #{wrap_start}#{display}#{wrap_end}" : display
+	"* #{wrap_start}#{display}#{wrap_end}"
 end
 
 pages = structured.map do |page_title, contents|
