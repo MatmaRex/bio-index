@@ -81,6 +81,8 @@
 			var descriptionSuggestion = $entry.data('descriptionSuggestion');
 			var itemid = $entry.data('itemid');
 			
+			var $editsectionLink = $entry.find('.mw-editsection').detach();
+			
 			// rebuild the entry with edit fields
 			var $defaultsortEntry = $('<input type=text>').val(defaultsort||title);
 			var $articleLink = $('<a>').text('↗')
@@ -117,13 +119,16 @@
 			}).trigger('keyup');
 			
 			function rebuild() {
+				if(description) {
+					$editsectionLink.find('a').text('edytuj');
+				}
 				$entry.empty().append(
 					$articleLink.attr('title', title).text(defaultsort||title),
 					mw.html.escape(lifetime ? ' ('+lifetime+')' : ''),
 					' – ',
 					description ? mw.html.escape(description) : $('<em>').text('brak opisu w Wikidanych'),
 					' ',
-					$('<span class=mw-editsection>[<a>edytuj</a>]</span>')
+					$editsectionLink
 				);
 				
 				$entry.data('title', title);
