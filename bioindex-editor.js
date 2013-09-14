@@ -43,7 +43,7 @@
 	
 	var goToNextActive = false;
 	
-	$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection a', function(e) {
+	$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection:last-child a', function(e) {
 		var that = this;
 		mw.loader.using(['jquery.spinner', 'mediawiki.api', 'jquery.wikibase.linkitem'], function() {
 			/*global wikibase*/
@@ -63,14 +63,15 @@
 				$('<ul>').append(
 					$('<li>').text('Zmiana wyświetlanego imienia i nazwiska spowoduje zmianę {{DEFAULTSORT: w artykule.'),
 					$('<li>').text('Zmiana opisu spowoduje zmianę opisu artykułu na Wikidanych.'),
-					$('<li>').text('Lata życia nie są na razie edytowalne z poziomu tego narzędzia. Aby je poprawić, zmodyfikuj kategorie urodzenia i śmierci w artykule.')
+					$('<li>').text('Lata życia nie będą edytowalne z poziomu tego narzędzia. Aby je poprawić, zmodyfikuj kategorie urodzenia i śmierci w artykule.'),
+					$('<li>').text('Aliasy nie są na razie edytowalne z poziomu tego narzędzia.')
 				),
 				$('<h3>').text('Porady dotyczące opisów na Wikidanych:'),
 				$('<ul>').append(
 					$('<li>').text('Długość nie powinna przekraczać 10-15 słów; często wystarczą 2-3.'),
 					$('<li>').text('Opis nie jest zdaniem: powinien zaczynać się małą literą, nie powinien kończyć się kropką.'),
 					$('<li>').text('Poprawny szyk to zwykle „polski wikipedysta”, nie „wikipedysta polski”.'),
-					$('<li>').text('Nie wspominaj o „obecnych” rzeczach – funkcjach polityków, klubach piłkarzy itd.')
+					$('<li>').text('Utrzymuj ponadczasowy styl – nie wspominaj o „obecnych” funkcjach polityków, klubach piłkarzy itd.')
 				)
 			);
 			
@@ -80,8 +81,9 @@
 			var description = $entry.data('description');
 			var descriptionSuggestion = $entry.data('descriptionSuggestion');
 			var itemid = $entry.data('itemid');
+			var aliased = $entry.data('aliased');
 			
-			var $editsectionLink = $entry.find('.mw-editsection').detach();
+			var $editsectionLinks = $entry.find('.mw-editsection').detach();
 			
 			// rebuild the entry with edit fields
 			var $defaultsortEntry = $('<input type=text>').val(defaultsort||title);
@@ -97,6 +99,8 @@
 			var $dummyForMeasurements = $('<span>').addClass('bioindex-dummy');
 			
 			var $form = $('<form>').append(
+				aliased ? mw.html.escape(aliased) : '',
+				aliased ? ' → ' : '',
 				$defaultsortEntry,
 				$articleLink,
 				mw.html.escape(lifetime ? ' ('+lifetime+')' : ''),
@@ -120,15 +124,18 @@
 			
 			function rebuild() {
 				if(description) {
-					$editsectionLink.find('a').text('edytuj');
+					$editsectionLinks.last().find('a').text('edytuj');
 				}
 				$entry.empty().append(
+					aliased ? mw.html.escape(aliased) : '',
+					aliased ? ' ' + $editsectionLinks.first() : '',
+					aliased ? ' → ' : '',
 					$articleLink.attr('title', title).text(defaultsort||title),
 					mw.html.escape(lifetime ? ' ('+lifetime+')' : ''),
 					' – ',
-					description ? mw.html.escape(description) : $('<em>').text('brak opisu w Wikidanych'),
+					description ? mw.html.escape(description) : $('<i>').text('brak opisu w Wikidanych'),
 					' ',
-					$editsectionLink
+					$editsectionLinks.last()
 				);
 				
 				$entry.data('title', title);
@@ -136,6 +143,7 @@
 				$entry.data('lifetime', lifetime);
 				$entry.data('description', description);
 				$entry.data('itemid', itemid);
+				$entry.data('aliased', aliased);
 			}
 			
 			function handleDefaultsort(){
