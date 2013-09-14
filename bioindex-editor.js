@@ -108,7 +108,7 @@
 				$instructions,
 				$dummyForMeasurements
 			);
-			$entry.empty().addClass('bioindex-entry-active').append( $form );
+			$entry.empty().append( $form );
 			$descriptionEntry.focus();
 			
 			// autosizing

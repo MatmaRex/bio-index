@@ -6,7 +6,7 @@
 	padding: 1em;
 }
 
-.bioindex-entry-active input[type=text] {
+.bioindex-entry input[type=text] {
 	border: 0;
 	border-bottom: 1px solid gray;
 	transition: width 100ms;
