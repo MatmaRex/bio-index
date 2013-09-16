@@ -88,8 +88,7 @@ Parallel.each_with_index(to_upload, in_threads: 10) do |(title, _, desc), i|
 				summary: "imported description from the Polish Wikipedia",
 				
 				data: data.to_json,
-				site: 'plwiki',
-				title: title,
+				new: 'item',
 			)
 		end
 		
