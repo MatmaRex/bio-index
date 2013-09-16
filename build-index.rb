@@ -212,7 +212,7 @@ def build_heading text
 	# to ascii except for letters with Polish diacritics
 	text = text.to_ascii(@pliterki_heading).tr('@','a').tr("'`\"",'')
 	# strip non-letters like ",", ignore all after first space; uppercase first letter only
-	return (UnicodeUtils.titlecase text.sub(/ .+/, '').gsub(/[^a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, '')).first(3)
+	return (UnicodeUtils.titlecase text.sub(/ .+/, '').gsub(/[^a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, ''))[0, 3]
 end
 def build_sortkey text
 	@pliterki_sortkey ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii('ż'=>'z~', 'Ż'=>'Z~')+'~'] } ]
@@ -233,9 +233,9 @@ items.sort_by!{|h| h[:sortkey] }
 # split into pages.
 # prefer one page == one letter, but only up to 1k entries per page.
 # then prefer chunking by 2 letters and finally by 3 (all).
-structured = items.chunk{|h| h[:heading].first(1) }.map{|page, hs|
+structured = items.chunk{|h| h[:heading][0, 1] }.map{|page, hs|
 	if hs.length>1000
-		hs.chunk{|h| h[:heading].first(2) }.map{|page, hs|
+		hs.chunk{|h| h[:heading][0, 2] }.map{|page, hs|
 			if hs.length>1000
 				hs.chunk{|h| h[:heading] }.to_a
 			else
