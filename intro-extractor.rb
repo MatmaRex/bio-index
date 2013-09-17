@@ -61,7 +61,7 @@ def parse_intro text
 	zaj.sub!(/(\S{3,}\.)\s+.+/, '\1') # everything after the first sentence; try to grasp abbreviations
 	zaj.sub!(/\.\s*\Z/, '') # (final full stop)
 	zaj.gsub!(/\[\[([^\|\]]+\||)([^\|\]]+)\]\]/, '\2') # links
-	zaj.sub!(/\A\W+/, '') # any non-word characters left at the beginning
+	zaj.sub!(/\A[^\p{Word}]+/, '') # any non-word characters left at the beginning
 	
 	return [lifetime, zaj]
 end
