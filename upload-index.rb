@@ -94,7 +94,10 @@ Parallel.each_with_index(to_upload, in_threads: 10) do |(title, _, desc), i|
 			end
 			
 			if !res['success']
-				Thread.exclusive{ puts "Error: #{title}" }
+				Thread.exclusive do
+					pp res
+					puts "Error: #{title}"
+				end
 			end
 		end
 	rescue RestClient::BadGateway, Errno::ECONNRESET, RestClient::RequestTimeout, RestClient::ServerBrokeConnection
