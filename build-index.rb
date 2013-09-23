@@ -176,7 +176,7 @@ items = SavePoint.here! 'descriptionSuggestion' do
 	items
 end
 
-prefix = 'Wikipedysta:Matma Rex/Noty_biograficzne/'
+prefix = 'Wikipedia:Indeks biografii/'
 
 # add aliases
 aliases_page = s.page(prefix+'Aliasy')
