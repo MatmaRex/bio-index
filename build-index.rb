@@ -330,6 +330,12 @@ end
 
 mode = :save # or :dump
 s.summary = 'aktualizacja list'
-pages.compact.each(&mode)
-aliases_page.send(mode)
-index_page.send(mode)
+
+# save/dump all pages
+(pages.compact + [aliases_page, index_page]).each do |p|
+	begin
+		p.send mode
+	rescue RestClient::BadGateway, Errno::ECONNRESET, RestClient::RequestTimeout, RestClient::ServerBrokeConnection
+		retry
+	end
+end
