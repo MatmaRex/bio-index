@@ -265,6 +265,7 @@ def render_line h, other_items, aliases_page_title
 		# use the item this one points to with additional alias information added
 		old_h = h
 		h = other_items.find{|h2| h2[:title] == old_h[:title] && !h2[:alias] }
+		return nil if !h
 		h = h.dup
 		h[:aliased] = old_h[:defaultsort]
 	end
@@ -326,7 +327,7 @@ pages = structured.map do |page_title, contents|
 		nil
 	else
 		page = s.page(prefix+page_title)
-		page.text = lines.join("\n")
+		page.text = lines.compact.join("\n")
 		page
 	end
 end
