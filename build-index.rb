@@ -256,8 +256,6 @@ index = structured.map(&:first).chunk{|a| a[0] }.map{|_, pagenames|
 }.join("<br>")
 index_page.text = index
 
-allowed_pages = %w[Ob Q]
-
 def render_line h, other_items, aliases_page_title
 	encoded_title = URI::encode_www_form_component h[:title]
 	
@@ -310,8 +308,6 @@ def render_line h, other_items, aliases_page_title
 end
 
 pages = structured.map do |page_title, contents|
-	next unless allowed_pages.include? page_title
-	
 	lines = []
 	contents.chunk{|h| h[:heading] }.each do |heading, hs|
 		lines << ""
