@@ -70,6 +70,7 @@ items = SavePoint.here! 'entity-list' do
 		)
 		
 		res['entities'].each do |itemid, r|
+			next if !map[itemid.upcase]
 			map[itemid.upcase][:description] = (r['descriptions']['pl']['value'] rescue nil)
 		end
 	end
@@ -93,6 +94,7 @@ items = SavePoint.here! 'lifetime' do
 		)
 		
 		res['query']['pages'].each do |pageid, r|
+			next if !map[pageid.to_i]
 			next if !r['categories'] # probably redirect or page otherwise gone
 			cats = r['categories'].map{|c| c['title'].sub(/^Kategoria:/, '') }
 			
