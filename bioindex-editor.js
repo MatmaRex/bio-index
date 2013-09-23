@@ -259,7 +259,8 @@
 				goToNextActive = $goToNextCheckbox.prop('checked');
 				if(goToNextActive) {
 					// this kinda sucks
-					var $all = $('#mw-content-text').find('.bioindex-entry[data-description=""]').add($entry);
+					var entriesNoDesc = '.bioindex-entry[data-description=""], .bioindex-entry:not([data-description])';
+					var $all = $('#mw-content-text').find(entriesNoDesc).add($entry);
 					if($all.length > 1) {
 						var idx = $all.index($entry);
 						var $next = $all.eq( idx === $all.length-1 ? 0 : idx+1 );
