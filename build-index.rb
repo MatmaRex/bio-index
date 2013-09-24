@@ -9,6 +9,7 @@ require 'uri'
 require 'nokogiri' # no kill like overkill
 require 'pp'
 
+require './roman.rb'
 require './savepoint.rb'
 require './intro-extractor.rb'
 
@@ -88,6 +89,15 @@ items = SavePoint.here! 'entity-list' do
 	items
 end
 
+def parse_one year
+	pne = year.index(/p\.?n\.?e/) ? -1 : 1
+	case year
+	when /\d+/;    year[/\d+/].to_i * pne
+	when /[IVX]+/; year[/[IVX]+/].to_roman * pne
+	else; nil
+	end
+end
+
 # add :lifetime
 birthcat = /^Urodzeni w (\d+)$/
 deathcat = /^Zmarli w (\d+)$/
@@ -152,6 +162,13 @@ items = SavePoint.here! 'lifetime' do
 				end
 			;
 			
+			birthyear_approx = birthinfo[0] != :none ? parse_one(birthinfo[1]) : nil rescue nil
+			deathyear_approx = deathinfo[0] != :none ? parse_one(deathinfo[1]) : nil rescue nil
+			birthyear_approx = (birthyear_approx.to_i) * 100 if RomanNumeral === birthyear_approx
+			deathyear_approx = (deathyear_approx.to_i) * 100 if RomanNumeral === deathyear_approx
+			
+			map[pageid.to_i][:birthyear_approx] = birthyear_approx
+			map[pageid.to_i][:deathyear_approx] = deathyear_approx
 			map[pageid.to_i][:lifetime] = lifetime
 		end
 	end
@@ -246,7 +263,7 @@ end
 
 # sort by defaultsort first, lifetime second, title as last resort for stable sort results
 # lifetime is an array or nil of arrays or nils; perfectly sortable
-items.sort_by!{|h| [ h[:sortkey], h[:lifetime]||'', h[:title] ] }
+items.sort_by!{|h| [ h[:sortkey], h[:birthyear_approx]||Float::INFINITY, h[:title] ] }
 
 # split into pages.
 # prefer one page == one letter, but only up to 1k entries per page.
