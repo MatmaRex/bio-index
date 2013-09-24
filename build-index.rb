@@ -254,9 +254,9 @@ structured = items.chunk{|h| h[:heading][0, 1] }.map{|page, hs|
 
 index_page = s.page(prefix+'Indeks')
 index = structured.map(&:first).chunk{|a| a[0] }.map{|_, pagenames|
-	pagenames.map{|pgnm| "[[#{prefix+pgnm}|#{pgnm}]]" }.join(" • ")
-}.join("<br>")
-index_page.text = index
+	pagenames.map{|pgnm| "* [[#{prefix+pgnm}|#{pgnm}]]" }.join("\n")
+}.join("\n\n")
+index_page.text = "<div class=hlist>\n#{index}\n</div>"
 
 def render_line h, other_items, aliases_page_title
 	encoded_title = URI::encode_www_form_component h[:title]
