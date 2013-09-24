@@ -226,12 +226,14 @@ end
 
 items.each do |h|
 	h[:heading] = build_heading(h[:defaultsort] || h[:title])
-	h[:sortkey] = build_sortkey(h[:defaultsort] || h[:title])
-	
 	h[:heading] = '0-9' if h[:heading].empty? or h[:heading] =~ /^[0-9]/
+	
+	h[:sortkey] = build_sortkey(h[:defaultsort] || h[:title])
 end
 
-items.sort_by!{|h| h[:sortkey] }
+# sort by defaultsort first, lifetime second, title as last resort for stable sort results
+# lifetime is an array or nil of arrays or nils; perfectly sortable
+items.sort_by!{|h| [ h[:sortkey], h[:lifetime], h[:title] ] }
 
 # split into pages.
 # prefer one page == one letter, but only up to 1k entries per page.
