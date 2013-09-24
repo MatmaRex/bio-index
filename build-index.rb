@@ -233,7 +233,7 @@ end
 
 # sort by defaultsort first, lifetime second, title as last resort for stable sort results
 # lifetime is an array or nil of arrays or nils; perfectly sortable
-items.sort_by!{|h| [ h[:sortkey], h[:lifetime], h[:title] ] }
+items.sort_by!{|h| [ h[:sortkey], h[:lifetime]||'', h[:title] ] }
 
 # split into pages.
 # prefer one page == one letter, but only up to 1k entries per page.
