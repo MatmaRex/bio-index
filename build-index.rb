@@ -252,6 +252,10 @@ structured = items.chunk{|h| h[:heading][0, 1] }.map{|page, hs|
 	end
 }.inject(:+)
 
+previous_index_pages = s.make_list 'links_on', prefix+'Indeks'
+current_index_pages = s.make_list 'pages', structured.map{|pgnm, _| prefix+pgnm }
+unused_index_pages = previous_index_pages - current_index_pages
+
 index_page = s.page(prefix+'Indeks')
 index = structured.map(&:first).chunk{|a| a[0] }.map{|_, pagenames|
 	pagenames.map{|pgnm| "* [[#{prefix+pgnm}|#{pgnm}]]" }.join("\n")
@@ -328,6 +332,12 @@ pages = structured.map do |page_title, contents|
 		page.text = lines.compact.join("\n")
 		page
 	end
+end
+
+pages += unused_index_pages.map do |full_page_title|
+	page = s.page(full_page_title)
+	page.text = "{{ek|pusta strona indeksu biografii}}"
+	page
 end
 
 mode = :save # or :dump
