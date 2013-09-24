@@ -256,10 +256,23 @@ previous_index_pages = s.make_list 'links_on', prefix+'Indeks'
 current_index_pages = s.make_list 'pages', structured.map{|pgnm, _| prefix+pgnm }
 unused_index_pages = previous_index_pages - current_index_pages
 
+# list all index pages. mark ones with no missing descriptions with bold.
 index_page = s.page(prefix+'Indeks')
-index = structured.map(&:first).chunk{|a| a[0] }.map{|_, pagenames|
-	pagenames.map{|pgnm| "* [[#{prefix+pgnm}|#{pgnm}]]" }.join("\n")
+
+index = structured.map{|page_title, contents|
+	# page is done if all entries have a non-empty description
+	[page_title, contents.all?{|h| h[:alias] || (h[:description] && !h[:description].empty?) }]
+}.chunk{|page_title, is_done|
+	# group by first letter
+	page_title[0]
+}.map{|first_letter, list_items|
+	# generate list section for each first letter
+	content = list_items.map{|page_title, is_done|
+		link = "[[#{prefix+page_title}|#{page_title}]]"
+		is_done ? "* '''#{link}'''" : "* #{link}"
+	}.join("\n")
 }.join("\n\n")
+
 index_page.text = "<div class=hlist>\n#{index}\n</div>"
 
 def render_line h, other_items, aliases_page_title
