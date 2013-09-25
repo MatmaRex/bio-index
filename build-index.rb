@@ -29,17 +29,6 @@ end
 
 # p list.length
 
-# used to determine correct sorting - whether 'ć' or 'ó' is to be considered a separate letter
-# (as in Polish), or merely a diacritic variant (as in, respectively, Serbian or Spanish)
-list_poles = SavePoint.here! 'category-poles' do
-	list_poles = s.make_list('category_recursive', 'Kategoria:Polacy')
-	# TODO less code duplication
-	list_poles.reject!{|a| a.start_with? 'Kategoria:' }
-	list_poles.uniq!
-	list_poles.sort!
-	list_poles
-end
-
 # {
 # 	title: '',
 # 	defaultsort: '',
@@ -237,28 +226,26 @@ end
 
 items += aliases
 
-def build_heading text, is_polish
+def build_heading text
 	@pliterki_heading ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l] } ]
 	# to ascii except for letters with Polish diacritics
-	text = text.to_ascii(is_polish ? @pliterki_heading : {}).tr('@','a').tr("'`\"",'')
+	text = text.to_ascii(@pliterki_heading).tr('@','a').tr("'`\"",'')
 	# strip non-letters like ",", ignore all after first space; uppercase first letter only
 	return (UnicodeUtils.titlecase text.sub(/ .+/, '').gsub(/[^0-9a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, ''))[0, 3]
 end
-def build_sortkey text, is_polish
+def build_sortkey text
 	@pliterki_sortkey ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii('ż'=>'z~', 'Ż'=>'Z~')+'~'] } ]
 	# convert everything to ascii, sort letters with Polish diacritics after all other ones
-	text = text.to_ascii(is_polish ? @pliterki_sortkey : {}).tr('@','a').tr("'`\"",'').downcase
+	text = text.to_ascii(@pliterki_sortkey).tr('@','a').tr("'`\"",'').downcase
 	# strip non-letters like ","
 	return text.gsub(/[^0-9a-zA-Z~ ]/, '')
 end
 
 items.each do |h|
-	is_polish = list_poles.include? h[:title]
-	
-	h[:heading] = build_heading(h[:defaultsort] || h[:title], is_polish)
+	h[:heading] = build_heading(h[:defaultsort] || h[:title])
 	h[:heading] = '0-9' if h[:heading].empty? or h[:heading] =~ /^[0-9]/
 	
-	h[:sortkey] = build_sortkey(h[:defaultsort] || h[:title], is_polish)
+	h[:sortkey] = build_sortkey(h[:defaultsort] || h[:title])
 end
 
 # sort by defaultsort first, lifetime second, title as last resort for stable sort results
