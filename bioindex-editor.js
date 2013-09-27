@@ -1,14 +1,5 @@
 /*global jQuery, mediaWiki, console */
 
-/**
- * Użycie: dodaj do [[Special:Mypage/common.js]] poniższe dwa wpisy:
- * 
- *   importScript('Wikipedysta:Matma Rex/bioindex-editor.js');
- *   importStylesheet('Wikipedysta:Matma Rex/bioindex-editor.css');
- * 
- * Wersja bardzo alfa.
- */
-
 (function($, mw){
 	if($('.bioindex-entry').length === 0) {
 		// only load when relevant
