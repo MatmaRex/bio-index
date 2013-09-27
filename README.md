@@ -40,6 +40,7 @@ Brief description of each file:
 * Wikipedia gadget
     * **bioindex-editor.css** and **bioindex-editor.js** – a gadget that allows editors to modify
       the Wikidata descriptions and Wikipedia defaultsorts straight from the index itself.
+    * **bioindex-editor-bootstrap.js** – minimal loader for the gadget, to be added to common.js.
 
 * Primary scripts
     * **build-index.rb** – aggregate data from all sources and upload them to the index. Takes a few
