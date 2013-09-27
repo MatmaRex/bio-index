@@ -162,6 +162,9 @@
 				$entry.data('description', description);
 				$entry.data('itemid', itemid);
 				$entry.data('aliased', aliased);
+				
+				// .data doesn't update data- attributes (only reads from them), and we depend on this one for goToNextActive
+				$entry.attr('data-description', description);
 			}
 			
 			function handleAlias(){
