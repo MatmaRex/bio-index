@@ -165,7 +165,7 @@
 						var pagetext = resp.query.pages[ resp.query.pageids[0] ].revisions[0]['*'];
 						var newdefsort = '{{DEFAULTSORT:'+defaultsort+'}}';
 						
-						if(pagetext.indexOf('{{DEFAULTSORT:')) {
+						if(pagetext.indexOf('{{DEFAULTSORT:') !== -1) {
 							pagetext = pagetext.replace(/{{DEFAULTSORT:.+?}}/, newdefsort);
 						} else {
 							pagetext = pagetext.replace(/\[\[\s*(kategoria|category)\s*:/i, newdefsort+"\n"+'$&');
