@@ -176,7 +176,7 @@
 							token: wptoken,
 							title: title,
 							text: pagetext,
-							summary: "poprawa DEFAULTSORT via [[:pl:"+pagename+"|noty biograficzne]]",
+							summary: "poprawa DEFAULTSORT via [["+pagename+"|noty biograficzne]]",
 						}).fail(errorHandler).done(function(resp){
 							if(resp.edit && resp.edit.result == 'Success') {
 								var diff = "/?oldid="+resp.edit.newrevid+"&diff=prev";
