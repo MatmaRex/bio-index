@@ -118,8 +118,8 @@
 					$editsectionLinks.last().find('a').text('edytuj');
 				}
 				$entry.empty().append(
-					aliased ? mw.html.escape(aliased) : '',
-					aliased ? ' ' + $editsectionLinks.first() : '',
+					aliased ? mw.html.escape(aliased) + ' ' : '',
+					aliased ? $editsectionLinks.first() : '',
 					aliased ? ' → ' : '',
 					$articleLink.attr('title', title).text(defaultsort||title),
 					mw.html.escape(lifetime ? ' ('+lifetime+')' : ''),
