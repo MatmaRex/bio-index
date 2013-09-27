@@ -14,6 +14,10 @@
 		mw.notify(text, {autoHide: !!tag, tag: 'bioindex'+tag});
 	}
 	
+	function regexpEscape(str) {
+		return str.replace(/([\\{}()|.?*+\-\^$\[\]])/g, '\\$1');
+	}
+	
 	function errorHandler() {
 		notify('Coś poszło nie tak. Odśwież stronę!');
 		console.log(this);
@@ -34,7 +38,7 @@
 	
 	var goToNextActive = false;
 	
-	$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection:last-child a', function(e) {
+	$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection a', function(e) {
 		var that = this;
 		mw.loader.using(['jquery.spinner', 'mediawiki.api', 'jquery.wikibase.linkitem'], function() {
 			/*global wikibase*/
@@ -55,7 +59,7 @@
 					$('<li>').text('Zmiana wyświetlanego imienia i nazwiska spowoduje zmianę {{DEFAULTSORT: w artykule.'),
 					$('<li>').text('Zmiana opisu spowoduje zmianę opisu artykułu na Wikidanych.'),
 					$('<li>').text('Lata życia nie będą edytowalne z poziomu tego narzędzia. Aby je poprawić, zmodyfikuj kategorie urodzenia i śmierci w artykule.'),
-					$('<li>').text('Aliasy nie są na razie edytowalne z poziomu tego narzędzia.')
+					$('<li>').text('Ustawienie pustego aliasu jest równoznaczne z usunięciem go.')
 				),
 				$('<h3>').text('Porady dotyczące opisów na Wikidanych:'),
 				$('<ul>').append(
@@ -76,6 +80,26 @@
 			
 			var $editsectionLinks = $entry.find('.mw-editsection').detach();
 			
+			function buildAddAliasButton(text) {
+				var $a = $('<a>')
+					.text(text)
+					.attr('href', mw.util.wikiGetlink('Wikipedia:Indeks biografii/Aliasy'));
+				return $('<span class=mw-editsection>').append( '[', $a, ']' );
+			}
+			
+			var $addAliasButton = buildAddAliasButton('dodaj alias');
+			var $aliasEntry = $('<input type=text>').val(aliased);
+			$addAliasButton.find('a').on('click keypress', function(e) {
+				if(e.type === 'keypress' && e.which !== 13 && e.which !== 32) {
+					return; // handle enter and space
+				}
+				e.preventDefault();
+				
+				$addAliasButton.remove();
+				$form.prepend($aliasEntry, ' → ');
+				$aliasEntry.focus();
+			});
+			
 			// rebuild the entry with edit fields
 			var $defaultsortEntry = $('<input type=text>').val(defaultsort||title);
 			var $articleLink = $('<a>').text('↗')
@@ -90,10 +114,9 @@
 			var $dummyForMeasurements = $('<span>').addClass('bioindex-dummy');
 			
 			var $form = $('<form>').append(
-				aliased ? mw.html.escape(aliased) : '',
-				aliased ? ' → ' : '',
 				$defaultsortEntry,
 				$articleLink,
+				$addAliasButton,
 				mw.html.escape(lifetime ? ' ('+lifetime+')' : ''),
 				' – ',
 				$descriptionEntry, ' ',
@@ -103,12 +126,15 @@
 				$instructions,
 				$dummyForMeasurements
 			);
+			if(aliased) {
+				$addAliasButton.find('a').trigger('click');
+			}
 			$entry.empty().append( $form );
 			$descriptionEntry.focus();
 			
 			// autosizing
 			$dummyForMeasurements.css('font', $defaultsortEntry.css('font'));
-			$defaultsortEntry.add($descriptionEntry).on('keyup keydown keypress change cut paste', function(){
+			$defaultsortEntry.add($descriptionEntry).add($aliasEntry).on('keyup keydown keypress change cut paste', function(){
 				$dummyForMeasurements.text( 'X' + $(this).val() + 'X' );
 				$(this).css('width', Math.min(Math.max($dummyForMeasurements.width(), 100), 600) );
 			}).trigger('keyup');
@@ -128,6 +154,7 @@
 					' ',
 					$editsectionLinks.last()
 				);
+				$aliasEntry.remove(); // if it was not inserted, we need to clear event jQuery handlers manually
 				
 				$entry.data('title', title);
 				$entry.data('defaultsort', defaultsort);
@@ -137,6 +164,66 @@
 				$entry.data('aliased', aliased);
 			}
 			
+			function handleAlias(){
+				var promise = $.Deferred();
+				
+				var oldText = aliased;
+				var newText = $.trim( $aliasEntry.val() );
+				if(newText == aliased) {
+					promise.resolve(null);
+					return promise;
+				}
+				aliased = newText;
+				
+				var pagename = 'Wikipedia:Indeks biografii/Aliasy';
+				wpApi.get({
+					action: 'tokens',
+					type: 'edit'
+				}).fail(errorHandler).done(function(resp){
+					var wptoken = resp.tokens.edittoken;
+					
+					wpApi.get({
+						action: 'query',
+						prop: 'revisions',
+						rvprop: 'content',
+						rvlimit: '1',
+						titles: pagename,
+						indexpageids: true
+					}).fail(errorHandler).done(function(resp){
+						var pagetext = resp.query.pages[ resp.query.pageids[0] ].revisions[0]['*'];
+						var newalias = aliased ? ('* ' + aliased + ' → [[' + title + ']]') : '';
+						
+						if(oldText) {
+							var oldalias = new RegExp('^[:#*]\\s*(' + regexpEscape(oldText) + ')\\s*(?:-*[→>›])\\s*\\[\\[' + regexpEscape(title) + '\\]\\]*$', 'm');
+							pagetext = pagetext.replace(oldalias, newalias);
+						} else {
+							pagetext += "\n" + newalias;
+						}
+						
+						wpApi.post({
+							action: 'edit',
+							token: wptoken,
+							title: pagename,
+							text: pagetext,
+							summary: (oldText ? "modyfikacja" : "dodanie") + " aliasu via [["+pagename+"|noty biograficzne]]",
+						}).fail(errorHandler).done(function(resp){
+							if(resp.edit && resp.edit.result == 'Success') {
+								var diff = "/?oldid="+resp.edit.newrevid+"&diff=prev";
+								notify( $('<span>').append(
+									'Zapisano zmiany w artykule ' + mw.html.escape(pagename) + '. ',
+									$('<a>').text('Diff').attr('href', diff),
+									'.'
+								), 'aliased' );
+								promise.resolve(resp);
+							} else {
+								promise.reject(resp);
+							}
+						});
+					});
+				});
+				
+				return promise;
+			}
 			function handleDefaultsort(){
 				var promise = $.Deferred();
 				
@@ -260,6 +347,7 @@
 				}
 				
 				$.when(
+					handleAlias().fail(errorHandler),
 					handleDefaultsort().fail(errorHandler),
 					handleDescription().fail(errorHandler)
 				).then(function(){
