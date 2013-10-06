@@ -236,7 +236,7 @@
 				var promise = $.Deferred();
 				
 				var newText = $.trim( $defaultsortEntry.val() );
-				if(newText == defaultsort) {
+				if(newText == (defaultsort||title)) {
 					promise.resolve(null);
 					return promise;
 				}
