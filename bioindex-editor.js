@@ -7,6 +7,7 @@
 	}
 	
 	mw.loader.load('jquery.spinner');
+	mw.loader.load('jquery.json');
 	mw.loader.load('mediawiki.api');
 	mw.loader.load('jquery.wikibase.linkitem');
 	
@@ -40,7 +41,7 @@
 	
 	$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection a', function(e) {
 		var that = this;
-		mw.loader.using(['jquery.spinner', 'mediawiki.api', 'jquery.wikibase.linkitem'], function() {
+		mw.loader.using(['jquery.spinner', 'jquery.json', 'mediawiki.api', 'jquery.wikibase.linkitem'], function() {
 			/*global wikibase*/
 			if(e.type === 'keypress' && e.which !== 13 && e.which !== 32) {
 				return; // handle enter and space
@@ -142,6 +143,9 @@
 			function rebuild() {
 				if(description) {
 					$editsectionLinks.last().find('a').text('edytuj');
+				}
+				if(itemid) {
+					$editsectionLinks.removeClass('external');
 				}
 				$entry.empty().append(
 					aliased ? mw.html.escape(aliased) + ' ' : '',
@@ -303,7 +307,32 @@
 				}).fail(errorHandler).done(function(resp){
 					var wdtoken = resp.tokens.edittoken;
 					
-					wdApi.post({
+					var data = null;
+					if(!itemid) {
+						// construct the entire item structure
+						data = {
+							sitelinks: {
+								plwiki: {
+									site: 'plwiki',
+									title: title
+								}
+							},
+							labels: {
+								pl: {
+									language: 'pl',
+									value: title
+								}
+							},
+							descriptions: {
+								pl: {
+									language: 'pl',
+									value: description
+								}
+							}
+						};
+					}
+					
+					wdApi.post(itemid ? {
 						action: 'wbsetdescription',
 						token: wdtoken,
 						summary: "edit made via [[:pl:"+pagename+"|Polish Wikipedia index of biographies]]",
@@ -311,8 +340,17 @@
 						title: title,
 						language: 'pl',
 						value: description
+					} : {
+						action: 'wbeditentity',
+						token: wdtoken,
+						summary: "edit made via [[:pl:"+pagename+"|Polish Wikipedia index of biographies]]",
+						data: $.toJSON(data),
+						'new': 'item'
 					}).fail(errorHandler).done(function(resp){
 						if(resp.success) {
+							if(!itemid) {
+								itemid = resp.entity.id;
+							}
 							var diff = "//www.wikidata.org/?oldid="+resp.entity.lastrevid+"&diff=prev";
 							notify( $('<span>').append(
 								'Zapisano zmiany we wpisie ' + mw.html.escape(title) + '. ',
