@@ -178,7 +178,8 @@
 				}
 				aliased = newText;
 				
-				var pagename = 'Wikipedia:Indeks biografii/Aliasy';
+				var pagename = mw.config.get('wgPageName');
+				var aliases_pagename = 'Wikipedia:Indeks biografii/Aliasy';
 				wpApi.get({
 					action: 'tokens',
 					type: 'edit'
@@ -190,7 +191,7 @@
 						prop: 'revisions',
 						rvprop: 'content',
 						rvlimit: '1',
-						titles: pagename,
+						titles: aliases_pagename,
 						indexpageids: true
 					}).fail(errorHandler).done(function(resp){
 						var pagetext = resp.query.pages[ resp.query.pageids[0] ].revisions[0]['*'];
@@ -206,14 +207,14 @@
 						wpApi.post({
 							action: 'edit',
 							token: wptoken,
-							title: pagename,
+							title: aliases_pagename,
 							text: pagetext,
 							summary: (oldText ? "modyfikacja" : "dodanie") + " aliasu via [["+pagename+"|noty biograficzne]]",
 						}).fail(errorHandler).done(function(resp){
 							if(resp.edit && resp.edit.result == 'Success') {
 								var diff = "/?oldid="+resp.edit.newrevid+"&diff=prev";
 								notify( $('<span>').append(
-									'Zapisano zmiany w artykule ' + mw.html.escape(pagename) + '. ',
+									'Zapisano zmiany w artykule ' + mw.html.escape(aliases_pagename) + '. ',
 									$('<a>').text('Diff').attr('href', diff),
 									'.'
 								), 'aliased' );
