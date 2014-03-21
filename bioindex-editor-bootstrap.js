@@ -19,10 +19,10 @@ $( function() {
 				$editlink.trigger('click');
 			});
 			
-			$('#mw-content-text').off('click keypress', '.bioindex-entry .mw-editsection a', loadHandler);
+			$('#mw-content-text').off('click keypress', '.bioindex-entry .bioindex-edit a', loadHandler);
 			e.preventDefault();
 		}
 
-		$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection a', loadHandler);
+		$('#mw-content-text').on('click keypress', '.bioindex-entry .bioindex-edit a', loadHandler);
 	});
 } );

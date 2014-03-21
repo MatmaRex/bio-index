@@ -321,7 +321,7 @@ def render_line h, other_items, aliases_page_title
 		(h[:aliased] ?
 			[
 				h[:aliased],
-				"<span class=mw-editsection>&#x5B;[[#{aliases_page_title}|edytuj alias]]]</span>",
+				"<span class='bioindex-edit mw-editsection-like'>&#x5B;[[#{aliases_page_title}|edytuj alias]]]</span>",
 				'→'
 			] :
 			nil),
@@ -336,8 +336,8 @@ def render_line h, other_items, aliases_page_title
 			"#{h[:description]}"  :
 			"''brak opisu w Wikidanych''"),
 		(h[:itemid] ?
-			"<span class=mw-editsection>&#x5B;[[d:Special:ItemByTitle/plwiki/#{h[:title]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]</span>" :
-			"<span class=mw-editsection>&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]</span>"),
+			"<span class='bioindex-edit mw-editsection-like'>&#x5B;[[d:Special:ItemByTitle/plwiki/#{h[:title]}|#{h[:description] ? 'edytuj' : 'dodaj'}]]]</span>" :
+			"<span class='bioindex-edit mw-editsection-like'>&#x5B;[//www.wikidata.org/wiki/Special:NewItem?site=plwiki&label=#{encoded_title}&page=#{encoded_title} utwórz element i dodaj opis]]</span>"),
 	].flatten.compact.join(' ')
 	
 	"* #{wrap_start}#{display}#{wrap_end}"

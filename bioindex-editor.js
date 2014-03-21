@@ -39,7 +39,7 @@
 	
 	var goToNextActive = false;
 	
-	$('#mw-content-text').on('click keypress', '.bioindex-entry .mw-editsection a', function(e) {
+	$('#mw-content-text').on('click keypress', '.bioindex-entry .bioindex-edit a', function(e) {
 		var that = this;
 		mw.loader.using(['jquery.spinner', 'jquery.json', 'mediawiki.api', 'jquery.wikibase.linkitem'], function() {
 			/*global wikibase*/
@@ -79,13 +79,13 @@
 			var itemid = $entry.data('itemid') || '';
 			var aliased = $entry.data('aliased') || '';
 			
-			var $editsectionLinks = $entry.find('.mw-editsection').detach();
+			var $editsectionLinks = $entry.find('.bioindex-edit').detach();
 			
 			function buildAddAliasButton(text) {
 				var $a = $('<a>')
 					.text(text)
 					.attr('href', mw.util.getUrl('Wikipedia:Indeks biografii/Aliasy'));
-				return $('<span class=mw-editsection>').append( '[', $a, ']' );
+				return $('<span class="bioindex-edit mw-editsection-like">').append( '[', $a, ']' );
 			}
 			
 			var $addAliasButton = buildAddAliasButton('dodaj alias');
@@ -384,7 +384,7 @@
 					if($all.length > 1) {
 						var idx = $all.index($entry);
 						var $next = $all.eq( idx === $all.length-1 ? 0 : idx+1 );
-						$next.find('.mw-editsection a').trigger('click');
+						$next.find('.bioindex-edit a').trigger('click');
 					}
 				}
 				
