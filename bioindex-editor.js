@@ -84,7 +84,7 @@
 			function buildAddAliasButton(text) {
 				var $a = $('<a>')
 					.text(text)
-					.attr('href', mw.util.wikiGetlink('Wikipedia:Indeks biografii/Aliasy'));
+					.attr('href', mw.util.getUrl('Wikipedia:Indeks biografii/Aliasy'));
 				return $('<span class=mw-editsection>').append( '[', $a, ']' );
 			}
 			
@@ -104,7 +104,7 @@
 			// rebuild the entry with edit fields
 			var $defaultsortEntry = $('<input type=text>').val(defaultsort||title);
 			var $articleLink = $('<a>').text('↗')
-				.attr('href', mw.util.wikiGetlink(title))
+				.attr('href', mw.util.getUrl(title))
 				.attr('title', 'Przejdź do artykułu: '+title);
 			var $descriptionEntry = $('<input type=text>').val(description||descriptionSuggestion);
 			var $saveButton = $('<button type=submit>').text('zapisz');
