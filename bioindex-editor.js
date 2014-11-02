@@ -7,9 +7,9 @@
 	}
 	
 	mw.loader.load('jquery.spinner');
-	mw.loader.load('jquery.json');
+	mw.loader.load('json');
 	mw.loader.load('mediawiki.api');
-	mw.loader.load('jquery.wikibase.linkitem');
+	mw.loader.load('wikibase.client.getMwApiForRepo');
 	
 	function notify(text, tag) {
 		mw.notify(text, {autoHide: !!tag, tag: 'bioindex'+tag});
@@ -41,14 +41,14 @@
 	
 	$('#mw-content-text').on('click keypress', '.bioindex-entry .bioindex-edit a', function(e) {
 		var that = this;
-		mw.loader.using(['jquery.spinner', 'jquery.json', 'mediawiki.api', 'jquery.wikibase.linkitem'], function() {
+		mw.loader.using(['jquery.spinner', 'json', 'mediawiki.api', 'wikibase.client.getMwApiForRepo'], function() {
 			/*global wikibase*/
 			if(e.type === 'keypress' && e.which !== 13 && e.which !== 32) {
 				return; // handle enter and space
 			}
 			e.preventDefault();
 			
-			var wdApi = new wikibase.RepoApi();
+			var wdApi = wikibase.client.getMwApiForRepo();
 			wdLoginCheck(wdApi);
 			var wpApi = new mw.Api();
 			
@@ -344,7 +344,7 @@
 						action: 'wbeditentity',
 						token: wdtoken,
 						summary: "edit made via [[:pl:"+pagename+"|Polish Wikipedia index of biographies]]",
-						data: $.toJSON(data),
+						data: JSON.stringify(data),
 						'new': 'item'
 					}).fail(errorHandler).done(function(resp){
 						if(resp.success) {
