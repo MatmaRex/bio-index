@@ -1,9 +1,6 @@
 # coding: utf-8
 require 'sunflower'
 require 'parallel'
-require 'unicode_utils'
-require 'yaml'
-YAML::ENGINE.yamler = 'syck' # stupid unidecoder
 require 'unidecoder'
 require 'uri'
 require 'nokogiri' # no kill like overkill
@@ -230,7 +227,7 @@ def build_heading text
 	# to ascii except for letters with Polish diacritics
 	text = text.to_ascii(@pliterki_heading).tr('@','a').tr("'`\"",'')
 	# strip non-letters like ",", ignore all after first space; uppercase first letter only
-	return (UnicodeUtils.titlecase text.sub(/ .+/, '').gsub(/[^0-9a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, ''))[0, 3]
+	return text.sub(/ .+/, '').gsub(/[^0-9a-zA-ZążśźęćńółĄŻŚŹĘĆŃÓŁ]/, '').capitalize[0, 3]
 end
 def build_sortkey text
 	@pliterki_sortkey ||= Hash[ 'ążśźęćńółĄŻŚŹĘĆŃÓŁ'.split('').map{|l| [l, l.to_ascii('ż'=>'z~', 'Ż'=>'Z~')+'~'] } ]
