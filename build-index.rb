@@ -60,7 +60,7 @@ end
 # add :description
 items = SavePoint.here! 'entity-list' do
 	Parallel.each_with_index( items.each_slice(50), in_threads: 5 ) do |hs, i|
-		p i
+		# p i
 		map = Hash[ hs.map{|h| h[:itemid] ? [ h[:itemid], h ] : nil }.compact ]
 		
 		res = wd.API(
@@ -92,8 +92,7 @@ birthcat = /^Urodzeni w (\d+)$/
 deathcat = /^Zmarli w (\d+)$/
 items = SavePoint.here! 'lifetime' do
 	Parallel.each_with_index( items.each_slice(50), in_threads: 5 ) do |hs, i|
-		p i
-		
+		# p i
 		map = Hash[ hs.map{|h| [ h[:pageid].to_i, h ] } ]
 		
 		res = s.API(
@@ -168,7 +167,7 @@ end
 items = SavePoint.here! 'descriptionSuggestion' do
 	map = Hash[ items.map{|h| [ h[:title], h ] } ]
 	
-	dump_filename = '../../../Downloads/plwiki-20130831-pages-articles.xml.bz2'
+	dump_filename = '%USERPROFILE%/Downloads/plwiki-20240120-pages-meta-current.xml.bz2'
 	# two reasons for not using bzip2-ruby gem: it's a pita to build on windows
 	# and this magically provides parallelization of unzipping and processing
 	io = IO.popen "bzip2 -dc #{dump_filename}", 'rb'
@@ -370,7 +369,7 @@ pages += unused_index_pages.map do |full_page_title|
 	page
 end
 
-mode = :save # or :dump
+mode = :dump # or :save
 s.summary = 'aktualizacja list'
 
 # save/dump all pages
