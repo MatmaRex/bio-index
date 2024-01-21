@@ -4,7 +4,7 @@
 rm plwiki-*-pages-meta-current.xml.bz2
 rm savepoint-*
 
-wget http://dumps.wikimedia.org/plwiki/$1/plwiki-$1-pages-meta-current.xml.bz2
+wget https://dumps.wikimedia.org/plwiki/$1/plwiki-$1-pages-meta-current.xml.bz2
 
 sed -i "s/dump_filename = 'plwiki-[0-9]*/dump_filename = 'plwiki-"$1"/" build-index.rb
 

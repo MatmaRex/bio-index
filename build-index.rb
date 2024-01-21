@@ -14,7 +14,7 @@ require './savepoint.rb'
 require './intro-extractor.rb'
 
 s = Sunflower.new('w:pl').login
-wd = Sunflower.new('www.wikidata.org').login
+wd = Sunflower.new('https://www.wikidata.org').login
 
 list = SavePoint.here! 'category' do
 	list = [

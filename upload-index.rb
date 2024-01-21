@@ -6,7 +6,7 @@ require 'pp'
 
 require './savepoint.rb'
 
-wd = Sunflower.new('www.wikidata.org').login
+wd = Sunflower.new('https://www.wikidata.org').login
 
 to_upload = JSON.parse File.binread 'items.json'
 info = SavePoint.here! 'props-list' do

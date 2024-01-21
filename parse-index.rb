@@ -7,7 +7,7 @@ require './savepoint.rb'
 
 lines = SavePoint.here! 'existing-lines' do
 	s = Sunflower.new('w:pl').login
-	wd = Sunflower.new('www.wikidata.org').login
+	wd = Sunflower.new('https://www.wikidata.org').login
 	
 	list = s.make_list 'category', 'Kategoria:Noty biograficzne'
 	list.delete 'Noty biograficzne'
