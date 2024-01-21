@@ -36,7 +36,7 @@ end
 # 	itemid: 'Q',
 # }
 items = SavePoint.here! 'props-list' do
-	Parallel.map_with_index( list.each_slice(500), in_threads: 5 ) do |titles, i|
+	Parallel.map_with_index( list.each_slice(50), in_threads: 5 ) do |titles, i|
 		# p i
 		res = s.API(
 			action: 'query',
@@ -59,7 +59,7 @@ end
 
 # add :description
 items = SavePoint.here! 'entity-list' do
-	Parallel.each_with_index( items.each_slice(500), in_threads: 5 ) do |hs, i|
+	Parallel.each_with_index( items.each_slice(50), in_threads: 5 ) do |hs, i|
 		p i
 		map = Hash[ hs.map{|h| h[:itemid] ? [ h[:itemid], h ] : nil }.compact ]
 		
@@ -91,7 +91,7 @@ end
 birthcat = /^Urodzeni w (\d+)$/
 deathcat = /^Zmarli w (\d+)$/
 items = SavePoint.here! 'lifetime' do
-	Parallel.each_with_index( items.each_slice(500), in_threads: 5 ) do |hs, i|
+	Parallel.each_with_index( items.each_slice(50), in_threads: 5 ) do |hs, i|
 		p i
 		
 		map = Hash[ hs.map{|h| [ h[:pageid].to_i, h ] } ]
