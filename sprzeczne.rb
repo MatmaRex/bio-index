@@ -71,29 +71,22 @@ in_century = lambda{|yr, cent|
 	return yr.between?((cent-1).to_i*100+1, cent.to_i*100)
 }
 do_compare = lambda{|a, b, mode, title|
-	if !b
-		# missing in index (or both); forget it
-	elsif b && !a
-		['improv', title, mode, nil, b]
+	if (a && !b) || (b && !a)
+		# missing in index or category
+		['missing', title, mode, a, b]
 	else # a && b
 		if a != b
 			if (RomanNumeral === a && RomanNumeral === b) || (Integer === a && Integer === b)
 				['conflict', title, mode, a, b]
 			else
 				# try matching centuries
-				if RomanNumeral === b
-					if in_century.call(a, b)
-						# cat has more precision than note; forget it
-					else
-						['conflict', title, mode, a, b]
-					end
+				cent = [a, b].find{|x| RomanNumeral === x }
+				yr = [a, b].find{|x| Integer === x }
+				if in_century.call(yr, cent)
+					# more precision in index or category
+					['precision', title, mode, a, b]
 				else
-					if in_century.call(b, a)
-						# note has more precision than cat; notify
-						['improv', title, mode, a, b]
-					else
-						['conflict', title, mode, a, b]
-					end
+					['conflict', title, mode, a, b]
 				end
 			end
 		end
@@ -103,14 +96,16 @@ confl.each{|title, a, b|
 	a = parse_yrs.call(a);
 	b = parse_yrs.call(b);
 	
-	# a.length == 2 (always)
-	if b.length == 2
+	if b.length == 2 && a.length == 2
 		out << do_compare.call(a[0], b[0], 'birth', title)
 		out << do_compare.call(a[1], b[1], 'death', title)
+	elsif b.length == 1 && a.length == 1
+		# only one number provided, ambiguous whether it's the birth date, death date, or both
+		out << do_compare.call(a[0], b[0], 'birth (probably)', title)
 	else
-		# well...
-		out << do_compare.call(a[0], b[0], 'birth (maybe)', title)
-		out << do_compare.call(a[0], b[1], 'death (maybe)', title)
+		# only one number provided on one side, two on the other
+		out << do_compare.call(a[0]||a[1], b[0]||b[1], 'birth (maybe)', title)
+		out << do_compare.call(a[1]||a[0], b[1]||b[0], 'death (maybe)', title)
 	end
 }
 
@@ -118,24 +113,33 @@ out.compact!
 out.sort! # by type, title, birth/death
 
 fmt = lambda{|yr|
-	[yr.abs.to_s, (RomanNumeral===yr ? 'w.' : nil), yr<0 ? 'p.n.e' : nil ].compact.join(' ')
+	yr.nil? ? '—' : [yr.abs.to_s, (RomanNumeral===yr ? 'w.' : nil), yr<0 ? 'p.n.e' : nil ].compact.join(' ')
 }
-lines = out.select{|a| a[0] == 'conflict' }.map{|type, title, bd, a, b|
-	bd = bd[0] == ?b ? 'ur.' : 'zm.'
-	"|-\n| [[#{title}]] || #{bd} || #{fmt.call a} || #{fmt.call b}"
+
+fmt_lines = lambda{|out|
+	lines = out.map{|type, title, bd, a, b|
+		bd = bd[0] == ?b ? 'ur.' : 'zm.'
+		"|-\n| [[#{title}]] || #{bd} || #{fmt.call a} || #{fmt.call b}"
+	}
+	lines.each_slice(30).map.with_index{|lns, i|
+		<<-EOF.gsub(/\t/, '')
+		== #{i+1} ==
+		{| class=wikitable
+		! Osoba !!  !! wg kat. !! wg not
+		#{lns.join "\n"}
+		|}
+
+		EOF
+	}
 }
 
 puts 'Konflikty pomiędzy kategoryzacją (daty z lewej) a notami biograficznymi (z prawej).'
 puts ''
 puts '<div class=hlist>__TOC__</div>'
 puts ''
-puts lines.each_slice(30).map.with_index{|lns, i|
-	<<-EOF.gsub(/\t/, '')
-	== #{i+1} ==
-	{| class=wikitable
-	! Osoba !!  !! wg kat. !! wg not
-	#{lns.join "\n"}
-	|}
-	
-	EOF
-}
+puts '= Konflikty ='
+puts fmt_lines.call out.select{|a| a[0] == 'conflict' }
+puts '= Brakujące dane ='
+puts fmt_lines.call out.select{|a| a[0] == 'missing' }
+# puts '= Niepełna precyzja ='
+# puts fmt_lines.call out.select{|a| a[0] == 'precision' }
