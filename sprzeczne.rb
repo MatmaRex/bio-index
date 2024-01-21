@@ -56,7 +56,12 @@ parse_yrs = lambda{|yrs|
 	when /zm?|†/
 		[ nil, parse_one.call(yrs) ]
 	when /-/
-		yrs.split('-').map{|a| parse_one.call(a) }
+		parsed = yrs.split('-').map{|a| parse_one.call(a) }
+		if parsed[0] && parsed[1] && parsed[0] > 100 && parsed[1] < -100
+			# assume that the p.n.e. should apply to both dates
+			parsed[0] = -parsed[0].abs
+		end
+		parsed
 	when /^(?:\d+|[IVX]+)\s*(p\.?n\.?e\.?)?$/
 		[ parse_one.call(yrs) ] # single value
 	when nil
@@ -104,7 +109,7 @@ confl.each{|title, a, b|
 		out << do_compare.call(a[0], b[0], 'birth (probably)', title)
 	else
 		# only one number provided on one side, two on the other
-		out << do_compare.call(a[0]||a[1], b[0]||b[1], 'birth (maybe)', title)
+		out << do_compare.call(a[0], b[0], 'birth (maybe)', title)
 		out << do_compare.call(a[1]||a[0], b[1]||b[0], 'death (maybe)', title)
 	end
 }
@@ -113,7 +118,7 @@ out.compact!
 out.sort! # by type, title, birth/death
 
 fmt = lambda{|yr|
-	yr.nil? ? '—' : [yr.abs.to_s, (RomanNumeral===yr ? 'w.' : nil), yr<0 ? 'p.n.e' : nil ].compact.join(' ')
+	yr.nil? ? '—' : [yr.abs.to_s, (RomanNumeral===yr ? 'w.' : nil), yr<0 ? 'p.n.e.' : nil ].compact.join(' ')
 }
 
 fmt_lines = lambda{|out|
